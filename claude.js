@@ -41,7 +41,7 @@ ${LEARNER(L, lv)}
 
 Exercise type: ${TYPE_DESC[q.ty]}
 ${q.i ? "Instruction: " + q.i + "\n" : ""}Prompt: ${q.p}
-Reference answer(s) (any other correct, natural ${LOUT[L]} formulation is also fully correct): ${q.a.join(" | ")}
+${q.ty === "dit" ? `Dictated sentence (the learner must write exactly this sentence; any different word or spelling is an error): ${q.a[0]}` : `Reference answer(s) (any other correct, natural ${LOUT[L]} formulation is also fully correct): ${q.a.join(" | ")}`}
 Target structure: ${tp.n}
 Learner answer: """${answer}"""
 
@@ -50,7 +50,7 @@ Scoring:
 - nota 1: the target structure is correct but there is at least one other error (a wrong or missing accent counts).
 - nota 0: the target structure is wrong, missing, or the answer does not do the task.
 For each error: category must be one of these ids: ${catList(L)}.
-"porque" must be in ${LOUT[L]}, in short simple sentences a ${lv} learner understands; "porque_pt" is the same explanation in Brazilian Portuguese.
+"why" must be in ${LOUT[L]}, in short simple sentences a ${lv} learner understands; "why_pt" is the same explanation in Brazilian Portuguese.
 versao_corrigida: the learner's answer minimally corrected (keep his wording when it is valid).
 feedback: one sentence in ${LOUT[L]} at ${lv} level; feedback_pt: same in Portuguese.
 Reply with only JSON: {"nota":0|1|2,"tema_ok":true|false,"erros":[${errSchema}],"versao_corrigida":"","feedback":"","feedback_pt":""}`;

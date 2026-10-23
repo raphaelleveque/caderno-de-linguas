@@ -88,6 +88,7 @@ function attemptedIds(L) {
   return s;
 }
 function hasVoice(L) { return APP.voices[L].length > 0 && !(APP.settings.dictOff || {})[L]; }
+const anyLevel = q => !!(TOPIC[q.t] && TOPIC[q.t].lv === "*"); // ditado, homófonos, falsos amigos: valem em todo nível
 function levelTopics(L, lv) {
   return TOPICS[L].filter(t => (t.lv === lv || t.lv === "*") && !t.id.endsWith("_vocab") && (hasVoice(L) || !(t.id === "fr_dictee" || t.id === "es_dict")));
 }
@@ -191,7 +192,7 @@ function catErrorRate(L, cat) {
 }
 function levelStatus(L) {
   const st = APP.st[L], lv = st.level, inLevel = daysBetween(st.levelSince, today());
-  const att = recentAttempts(L, 28).filter(a => a.qlv === lv);
+  const att = recentAttempts(L, 28).filter(a => a.qlv === lv || (TOPIC[a.topic] && TOPIC[a.topic].lv === "*"));
   const acc = att.length ? att.reduce((s, a) => s + a.score, 0) / (2 * att.length) : 0;
   const topics = levelTopics(L, lv).map(tp => {
     const ta = att.filter(a => a.topic === tp.id);
@@ -219,7 +220,7 @@ function buildBlockItems(L) {
   // 2) novas
   const seen = attemptedIds(L);
   const fresh = pool.filter(q => !seen.has(q.id) && !chosen.includes(q.id));
-  const lvOk = q => q.lv === st.level || q.src === "aula" || q.src === "erro" || q.src === "texto";
+  const lvOk = q => q.lv === st.level || anyLevel(q) || q.src === "aula" || q.src === "erro" || q.src === "texto";
   const priority = shuffle(fresh.filter(q => (q.src === "erro" || q.src === "aula") && lvOk(q)));
   const boosted = new Set(Object.entries(st.boost || {}).filter(([, until]) => until >= st.session).map(([k]) => k));
   const tstat = topicStats(L, 28);
@@ -246,7 +247,7 @@ function buildBlockItems(L) {
   while (chosen.length < size) { const q = pickFrom(levelFresh); if (!q) break; add(q); }
   // 3) sem novas suficientes: repete as mais antigas do nível
   if (chosen.length < size) {
-    const old = pool.filter(q => q.lv === st.level && !chosen.includes(q.id))
+    const old = pool.filter(q => (q.lv === st.level || anyLevel(q)) && !chosen.includes(q.id))
       .sort((a, b) => ((st.srs[a.id] || {}).last || 0) - ((st.srs[b.id] || {}).last || 0));
     while (chosen.length < size) { const q = pickFrom(old) || old.find(x => !chosen.includes(x.id)); if (!q) break; add(q); }
   }

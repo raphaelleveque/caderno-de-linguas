@@ -96,7 +96,7 @@ const SEED_ES = [
 
   // Pronombres de objeto
   ["es_pron", "lac", "¿Has visto a Ana? Sí, ___ he visto esta mañana.", ["la"], { c: "pron" }],
-  ["es_pron", "lac", "¿Has llamado a tu madre? Sí, ___ he dado las gracias.", ["le"], { c: "pron" }],
+  ["es_pron", "lac", "¿Has escrito a tu madre? Sí, ___ he escrito un correo.", ["le"], { c: "pron" }],
   ["es_pron", "mc", "¿Compraste el pan? Sí, ___ compré.", ["lo"], { c: "pron", o: ["lo", "le", "él"] }],
   ["es_pron", "mc", "A mis hermanos ___ escribo cada semana.", ["les"], { c: "pron", o: ["les", "los", "le"] }],
   ["es_pron", "trad", "Eu conheço ela há anos.", ["La conozco desde hace años.", "La conozco hace años."], { c: "ptstr" }],
@@ -131,7 +131,7 @@ const SEED_ES = [
   // Comparativos
   ["es_comp", "lac", "Este café es ___ que el otro. (bueno → comparativo)", ["mejor"], { c: "synt" }],
   ["es_comp", "mc", "Ella es ___ alta como su madre.", ["tan"], { c: "ptlex", o: ["tan", "tanto", "tão"] }],
-  ["es_comp", "mc", "Mi hermano tiene 30 años y yo 25: él es ___ que yo.", ["mayor"], { c: "ptlex", o: ["mayor", "más viejo", "maior"] }],
+  ["es_comp", "mc", "Mi hermano tiene 30 años y yo 25: él es ___ que yo.", ["mayor"], { c: "ptlex", o: ["mayor", "mejor", "maior"] }],
   ["es_comp", "trad", "Meu irmão é mais velho que eu.", ["Mi hermano es mayor que yo."], { c: "ptlex" }],
   ["es_comp", "trad", "Este é o pior dia da semana.", ["Este es el peor día de la semana."], { c: "synt" }],
   ["es_comp", "erro", "Madrid es más grande de Sevilla.", ["Madrid es más grande que Sevilla."], { c: "synt" }],
@@ -238,7 +238,7 @@ const SEED_ES = [
   ["es_conect", "mc", "Estudio español ___ inglés.", ["e"], { c: "synt", o: ["e", "y"] }],
   ["es_conect", "mc", "¿Quieres siete ___ ocho?", ["u"], { c: "synt", o: ["u", "o"] }],
   ["es_conect", "mc", "No es caro, ___ barato.", ["sino"], { c: "synt", o: ["sino", "pero"] }],
-  ["es_conect", "lac", "Leo un libro ___ espero el autobús. (mientras / encuanto)", ["mientras"], { c: "ptlex" }],
+  ["es_conect", "lac", "Leo un libro ___ espero el autobús. (mientras / en cuanto)", ["mientras"], { c: "ptlex" }],
   ["es_conect", "trad", "Eu fiquei em casa porque estava chovendo.", ["Me quedé en casa porque llovía.", "Me quedé en casa porque estaba lloviendo."], { c: "synt" }],
   ["es_conect", "erro", "Encuanto él trabaja, yo estudio.", ["Mientras él trabaja, yo estudio."], { c: "ptlex" }],
   ["es_conect", "transf", "Hacía frío. Salí sin abrigo.", ["Aunque hacía frío, salí sin abrigo.", "Salí sin abrigo aunque hacía frío."], { c: "synt", i: "Une las dos frases con «aunque»." }],
@@ -255,7 +255,7 @@ const SEED_ES = [
 
   // ===== Reestruturación A2: temas nuevos (formatos de producción) =====
   // Indefinidos, cuantificadores y apócope
-  ["es_indefq", "cloze", "—¿Hay ___ en casa? —No, no hay nadie. —¿Quieres comer ___? —No, gracias, no quiero nada. Hoy hace un ___ día para salir.", ["alguien", "algo", "buen"], { c: "ptstr" }],
+  ["es_indefq", "cloze", "—¿Hay ___ en casa? —No, no hay nadie. —¿Quieres comer ___? —No, gracias, no quiero nada. Hoy hace un ___ (bueno) día para salir.", ["alguien", "algo", "buen"], { c: "ptstr" }],
   ["es_indefq", "corr", "No tengo ningún problema, pero no conozco a ninguno vecino.", ["No tengo ningún problema, pero no conozco a ningún vecino."], { c: "synt" }],
   ["es_indefq", "corr", "Hay demasiada gente aquí y hace bastante calor.", ["Hay demasiada gente aquí y hace bastante calor."], { c: "synt" }],
   ["es_indefq", "trad", "Ele é um grande amigo e um bom professor.", ["Es un gran amigo y un buen profesor."], { c: "ptlex" }],
@@ -300,7 +300,7 @@ const SEED_ES = [
   ["es_indimp1", "transf", "Hace sol. Salgo a pasear con mi perro.", ["Ayer hacía sol. Salí a pasear con mi perro."], { c: "pasados", i: "Cuéntalo en pasado, empezando por «Ayer»." }],
   ["es_indimp1", "mini", "Cuenta en 2 frases un pequeño accidente: describe la situación (imperfecto) y lo que pasó (indefinido).", ["Caminaba por la calle y miraba el móvil. De repente, me caí en un agujero."], { c: "pasados" }],
   // Condicional de cortesía
-  ["es_condcort", "cloze", "Buenos días, ___ (querer, yo) una habitación doble. ¿___ (Poder, usted) decirme el precio? Me ___ (gustar) verla antes.", ["querría|quería", "Podría", "gustaría"], { c: "conj" }],
+  ["es_condcort", "cloze", "Buenos días, ___ (querer, yo) una habitación doble. ¿___ (Poder, usted) decirme el precio? Me ___ (gustar) verla antes.", ["querría|quería|quisiera", "Podría", "gustaría"], { c: "conj" }],
   ["es_condcort", "corr", "Me gustaría reservar una mesa para dos.", ["Me gustaría reservar una mesa para dos."], { c: "conj" }],
   ["es_condcort", "corr", "¿Podrías a ayudarme con la maleta? Yo gustaría subir ya.", ["¿Podrías ayudarme con la maleta? Me gustaría subir ya."], { c: "gustar" }],
   ["es_condcort", "trad", "O senhor poderia falar mais devagar?", ["¿Podría hablar más despacio?"], { c: "conj" }],

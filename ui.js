@@ -91,7 +91,7 @@ function viewToday() {
   const kindLabel = { long: t("kLong"), class: t("kClass"), min: t("kMin") }[p.kind];
   let h = `<section class="dayhead"><p class="label">${esc(fmtDate(date, { weekday: "long" }))}</p><h1>${esc(fmtDate(date, { day: "numeric", month: "long" }))}</h1>
   <div class="row"><span class="pill acc">${kindLabel}</span>${p.langs.map(L => `<span class="pill">${langName(L)}</span>`).join("")}${complete ? `<span class="pill ok">${p.hard ? t("doneMin") : t("doneDay")}</span>` : ""}</div></section>`;
-  h += `<section class="streak"><span><b class="mono">${streak()}</b> <span class="muted">${t("streakDays")}</span></span><span><b class="mono">${last28()}</b><span class="muted">/28 ${t("last4w")}</span></span></section>`;
+  h += `<section class="streak"><span><b class="mono">${streak()}</b> <span class="muted">${t(streak() === 1 ? "streakDay1" : "streakDays")}</span></span><span><b class="mono">${last28()}</b><span class="muted">/28 ${t("last4w")}</span></span></section>`;
   h += `<section class="toggles" aria-label="${t("classToggles")}">${LANG_LIST.map(L => `<button class="tog" data-act="cls" data-v="${L}" aria-pressed="${classOn(date, L)}"><span class="box"></span>${t("hadClass_" + L)}</button>`).join("")}<button class="tog hard" data-act="hard" aria-pressed="${p.hard}"><span class="box"></span>${t("hardDay")}</button></section>`;
   if (p.hard) h += `<p class="note">${p.cls.length ? t("hardClass") : t("hardNoClass")}</p>`;
   for (const L of LANG_LIST) { const ls = levelStatus(L); if (ls.ready) h += `<div class="card banner"><h3>${t("readyTitle", { lang: langName(L), lv: ls.next })}</h3><p>${t("readyBody")}</p></div>`; }
@@ -182,7 +182,7 @@ function renderBlock() {
   h += `<div class="dots" aria-hidden="true">${dots}</div>`;
   if (b.kind === "texto" && b.text && q.src === "texto") h += `<article class="card"><p class="label">${t("readFirst")}</p><h2>${esc(b.text.title)}</h2><p style="white-space:pre-wrap">${esc(b.text.body)}</p></article>`;
   const tp = TOPIC[q.t];
-  h += `<section class="sheetp"><div class="meta"><span class="cat">${esc(tp.n)}</span><span class="cat">${q.lv}</span>${q.src !== "seed" ? `<span class="cat">${t("src_" + q.src)}</span>` : ""}${APP.st[L].srs[q.id] && s.phase === "answer" ? `<span class="cat">${t("review")}</span>` : ""}</div>`;
+  h += `<section class="sheetp"><div class="meta"><span class="cat">${esc(tp.n)}</span><span class="cat">${anyLevel(q) ? APP.st[L].level : q.lv}</span>${q.src !== "seed" ? `<span class="cat">${t("src_" + q.src)}</span>` : ""}${APP.st[L].srs[q.id] && s.phase === "answer" ? `<span class="cat">${t("review")}</span>` : ""}</div>`;
   h += `<p class="qinstr">${esc(q.i || typeInstr(q))}</p>`;
   if (q.ty === "dit") {
     h += `<div class="listen"><button class="btn" data-act="listen" data-v="1" ${s.replays >= 3 || s.phase !== "answer" ? "disabled" : ""}>${t("listen")}</button><button class="btn" data-act="listen" data-v="0.7" ${s.replays >= 3 || s.phase !== "answer" ? "disabled" : ""}>${t("slower")}</button><span class="note mono">${s.replays}/3</span>${chosenVoice(L) ? `<span class="note">· ${esc(chosenVoice(L).name)}</span>` : ""}</div>${s.phase === "answer" ? `<div class="row"><button class="btn ghost small" data-act="badAudio">${t("badAudio")}</button></div>` : ""}`;
@@ -195,7 +195,7 @@ function renderBlock() {
   }
   if (s.phase === "answer") {
     if (q.ty === "mc") h += `<div class="opts">${q.o.map(o => `<button class="opt" data-act="sel" data-v="${esc(o)}" aria-pressed="${s.sel === o}">${esc(o)}</button>`).join("")}</div>`;
-    else if (q.ty !== "cloze") h += `<textarea id="ans" rows=""${q.ty === "mini" ? 4 : 2}" lang="${L}" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="${t("yourAnswer")}">${esc(s.draft)}</textarea>`;
+    else if (q.ty !== "cloze") h += `<textarea id="ans" rows="${q.ty === "mini" ? 4 : 2}" lang="${L}" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="${t("yourAnswer")}">${esc(s.draft)}</textarea>`;
     h += `<div class="row"><button class="btn primary" data-act="submit" ${q.ty === "mc" && !s.sel ? "disabled" : ""}>${t("correct")}</button></div>`;
   } else if (s.phase === "correcting") {
     h += `<p class="thinking">${t("correcting")}</p>`;
@@ -213,6 +213,8 @@ function renderBlock() {
   bls.forEach((el, i) => { el.oninput = () => { s.blanks = s.blanks || []; s.blanks[i] = el.value; }; el.onkeydown = ev => { if (ev.key === "Enter") { ev.preventDefault(); (bls[i + 1] || el).focus(); } }; });
   if (bls[0] && s.phase === "answer") bls[0].focus();
 }
+// texto completo de referência (lacunas preenchidas com a primeira alternativa)
+function refText(q) { return q.ty === "cloze" ? q.p.split("___").map((p, i, arr) => p + (i < arr.length - 1 ? String(q.a[i] || "").split("|")[0] : "")).join("") : q.a[0]; }
 function clozeCell(q, a, i) {
   const v = a && a.blanks ? (a.blanks[i] || "") : "", e = a ? (a.errors || []).find(x => x.blank === i) : null;
   return e ? `<span class="mk"><del>${esc(v || "∅")}</del><ins>${esc(e.fix)}</ins></span>` : `<b class="okfill">${esc(v)}</b>`;
@@ -225,7 +227,7 @@ function resultHTML(q, a) {
   h += `<p class="why">${esc(t(a.difWhy))}</p>`;
   if (a.errors.length) h += notesHTML(L, a.errors, s.showPt);
   if (a.score < 2 || a.corrected) {
-    const best = a.corrected && a.score < 2 ? a.corrected : q.a[0];
+    const best = a.corrected && a.score < 2 ? a.corrected : refText(q);
     if (a.score < 2) h += `<div><p class="label">${t("correctVersion")}</p><p class="corr">${esc(best)}</p></div>`;
   }
   if (a.score === 2 && q.a.length && normTxt(q.a[0]) !== normTxt(a.answer) && !QTYPES[q.ty].closed) h += `<p class="note">${t("alsoPossible")} <span class="corr">${esc(q.a[0])}</span></p>`;
@@ -246,7 +248,7 @@ function renderBlockDone() {
   $app().innerHTML = `<div class="focus"><div class="fbar"><div class="row"><span class="label">${t("block")} · ${langName(b.lang)}</span></div></div>
   <section class="sheetp"><p class="verdict ${pts >= atts.length * 1.7 ? "ok" : "mid"}">${pts}/${atts.length * 2}</p><p>${t("blockDoneBody", { t: mmss(b.totalMs || 0) })}</p>${b.bonus ? `<p class="pill acc" style="justify-self:start">${t("bonus")}</p>` : ""}${complete ? `<p><b>${t("dayCompleteMsg")}</b></p>` : ""}
   <div class="dots">${atts.map(a => `<i class="d${a.score}"></i>`).join("")}</div></section>
-  <section class="card">${atts.map((a, k) => { const q = qById(a.qid); return `<div class="err"><div class="row"><span class="mono note">${k + 1}.</span>${verdictHTML(a.score)}<span class="cat">${esc(TOPIC[a.topic] ? TOPIC[a.topic].n : a.topic)}</span></div>${q ? `<p class="small muted">${esc(q.i || typeInstr(q))} ${q.ty === "dit" ? "" : "— " + esc(q.p)}</p>` : ""}<p class="pen" style="font-size:16px;line-height:2">${penHTML(a.answer, a.errors)}</p>${a.score < 2 && q ? `<p class="corr">${esc(a.corrected || q.a[0])}</p>` : ""}${(a.errors || []).filter(e => e.why).map(e => `<p class="why">${esc(e.why)}</p>`).join("")}</div>`; }).join("")}</section>
+  <section class="card">${atts.map((a, k) => { const q = qById(a.qid); return `<div class="err"><div class="row"><span class="mono note">${k + 1}.</span>${verdictHTML(a.score)}<span class="cat">${esc(TOPIC[a.topic] ? TOPIC[a.topic].n : a.topic)}</span></div>${q ? `<p class="small muted">${esc(q.i || typeInstr(q))} ${q.ty === "dit" || q.ty === "cloze" ? "" : "— " + esc(q.p)}</p>` : ""}${q && q.ty === "cloze" ? `<p class="pen cloze" style="font-size:16px;line-height:2">${q.p.split("___").map((p, i, arr) => esc(p) + (i < arr.length - 1 ? clozeCell(q, a, i) : "")).join("")}</p>` : `<p class="pen" style="font-size:16px;line-height:2">${penHTML(a.answer, a.errors)}</p>`}${a.score < 2 && q && q.ty !== "cloze" ? `<p class="corr">${esc(a.corrected || refText(q))}</p>` : ""}${(a.errors || []).filter(e => e.why).map(e => `<p class="why">${esc(e.why)}</p>`).join("")}</div>`; }).join("")}</section>
   <div class="row"><button class="btn primary" data-act="closeScreen">${t("back")}</button>${complete ? `<button class="btn" data-act="openBlock" data-v="${b.lang}">${t("oneMore")}</button>` : ""}</div></div>`;
 }
 
@@ -337,7 +339,7 @@ function viewProgress() {
   const L = APP.progLang || CUR, date = today(), ws = weekStart(date);
   let h = `<section class="dayhead"><p class="label">${t("tabProgress")}</p><h1>${t("progTitle")}</h1></section>`;
   // semana
-  h += `<section class="card"><div class="row" style="justify-content:space-between"><h3>${t("thisWeek")}</h3><span class="note"><b class="mono">${streak()}</b> ${t("streakDays")} · <b class="mono">${last28()}</b>/28</span></div><div class="week">${Array.from({ length: 7 }, (_, i) => {
+  h += `<section class="card"><div class="row" style="justify-content:space-between"><h3>${t("thisWeek")}</h3><span class="note"><b class="mono">${streak()}</b> ${t(streak() === 1 ? "streakDay1" : "streakDays")} · <b class="mono">${last28()}</b>/28</span></div><div class="week">${Array.from({ length: 7 }, (_, i) => {
     const d = addDays(ws, i), dd = dayDoc(d), n = blocksDone(d).length, bonus = blocksDone(d).filter(b => b.bonus).length;
     const cls = d > date ? "fut" : dd.complete ? (dd.minimal ? "min" : "full") : n ? "part" : "";
     return `<div class="wd ${cls} ${d === date ? "today" : ""}"><b>${esc(fmtDate(d, { weekday: "short" }))}</b><i></i><span class="mono">${n}${bonus ? "+" : ""}</span></div>`;
@@ -738,7 +740,11 @@ document.addEventListener("keydown", ev => {
     if (APP.screen.phase === "answer") submitAnswer(); else if (APP.screen.phase === "result") nextQuestion();
   }
 });
-document.addEventListener("visibilitychange", () => { if (document.hidden && APP.screen) closeSegment(); });
+document.addEventListener("visibilitychange", () => {
+  if (!APP.screen) return;
+  if (document.hidden) closeSegment();
+  else if (APP.screen.segStart) APP.screen.segStart = Date.now(); // tempo com a aba escondida não conta
+});
 
 // ---------- boot ----------
 async function boot() {

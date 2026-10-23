@@ -50,7 +50,7 @@ const SEED_FR = [
   // Imparfait
   ["fr_imp", "lac", "Quand j'étais petit, je ___ (jouer) au foot tous les jours.", ["jouais"], { c: "temps" }],
   ["fr_imp", "lac", "Il ___ (faire) beau ce jour-là.", ["faisait"], { c: "conj" }],
-  ["fr_imp", "lac", "Nous ___ (manger) toujours à midi.", ["mangions"], { c: "conj" }],
+  ["fr_imp", "lac", "Avant, nous ___ (manger) toujours à midi.", ["mangions"], { c: "conj" }],
   ["fr_imp", "mc", "Avant, nous ___ à Rio.", ["habitions"], { c: "temps", o: ["habitions", "habitons", "avons habité"] }],
   ["fr_imp", "trad", "Quando eu era criança, eu morava no interior.", ["Quand j'étais enfant, j'habitais à la campagne.", "Quand j'étais petit, je vivais à la campagne."], { c: "temps" }],
   ["fr_imp", "trad", "Estava chovendo e fazia frio.", ["Il pleuvait et il faisait froid."], { c: "temps" }],
@@ -335,7 +335,7 @@ const SEED_FR = [
   ["fr_preg", "corr", "Tu parle trop vite et tu oublie les accents.", ["Tu parles trop vite et tu oublies les accents."], { c: "conj" }],
   ["fr_pc", "corr", "Elle est allé au marché et elle a acheté des fleurs.", ["Elle est allée au marché et elle a acheté des fleurs."], { c: "accpp" }],
   ["fr_pc", "corr", "Ils sont venus hier et ils ont dormi ici.", ["Ils sont venus hier et ils ont dormi ici."], { c: "accpp" }],
-  ["fr_pc", "cloze", "Samedi, nous ___ (partir) tôt. Marie ___ (prendre) le train et ses enfants ___ (rester) à la maison.", ["sommes partis|sommes parties", "a pris", "sont restés"], { c: "accpp" }],
+  ["fr_pc", "cloze", "Samedi, nous ___ (partir) tôt. Marie ___ (prendre) le train et ses enfants ___ (rester) à la maison.", ["sommes partis|sommes parties", "a pris", "sont restés|sont restées"], { c: "accpp" }],
   ["fr_impe", "corr", "Prenez la première rue à droite, puis tournez à gauche et continuez tout droit.", ["Prenez la première rue à droite, puis tournez à gauche et continuez tout droit."], { c: "conj" }],
   ["fr_imp", "cloze", "Quand j'___ (être) enfant, nous ___ (habiter) à la campagne et mes parents ___ (avoir) un chien.", ["étais", "habitions", "avaient"], { c: "conj" }],
   ["fr_art", "corr", "Je ne bois pas du café le soir, mais je bois beaucoup de l'eau.", ["Je ne bois pas de café le soir, mais je bois beaucoup d'eau."], { c: "art" }],
