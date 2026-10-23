@@ -216,6 +216,43 @@ const SEED_ES = [
   ["es_plural", "erro", "Mis papeis están en el escritorio.", ["Mis papeles están en el escritorio."], { c: "ptlex" }],
   ["es_plural", "transf", "El joven alemán es amable.", ["Los jóvenes alemanes son amables."], { c: "acen", i: "Pon la frase en plural." }],
 
+  // Preposiciones de lugar y movimiento
+  ["es_prep", "lac", "Esta tarde voy ___ supermercado.", ["al"], { c: "prep" }],
+  ["es_prep", "lac", "Mi hermano vive ___ Valencia.", ["en"], { c: "prep" }],
+  ["es_prep", "mc", "Los sábados juego ___ fútbol con mis amigos.", ["al"], { c: "ptstr", o: ["al", "el", "de"] }],
+  ["es_prep", "mc", "Salí ___ la calle a las nueve.", ["a"], { c: "ptstr", o: ["a", "para", "en"] }],
+  ["es_prep", "trad", "Eu me mudei para Madri no ano passado.", ["Me mudé a Madrid el año pasado.", "El año pasado me mudé a Madrid."], { c: "ptstr" }],
+  ["es_prep", "trad", "Vamos de carro até a praia.", ["Vamos en coche hasta la playa.", "Vamos a la playa en coche."], { c: "prep" }],
+  ["es_prep", "erro", "Me mudé para aquí hace un mes.", ["Me mudé aquí hace un mes."], { c: "ptstr" }],
+  ["es_prep", "erro", "Llegué en casa muy tarde.", ["Llegué a casa muy tarde."], { c: "prep" }],
+  // Ortografía
+  ["es_orto", "mc", "Cuando era niño, ___ al fútbol todos los días.", ["jugaba"], { c: "acen", o: ["jugaba", "jugava"] }],
+  ["es_orto", "mc", "Ayer ___ en casa todo el día.", ["estuve"], { c: "acen", o: ["estuve", "estube"] }],
+  ["es_orto", "mc", "Mi ___ vive en Sevilla.", ["hermano"], { c: "acen", o: ["hermano", "ermano", "irmano"] }],
+  ["es_orto", "mc", "La ___ de hoy es difícil.", ["lección"], { c: "acen", o: ["lección", "leción", "lessión"] }],
+  ["es_orto", "mc", "Me gusta mucho la ___ española.", ["cerveza"], { c: "ptlex", o: ["cerveza", "cervesa", "cerveja"] }],
+  ["es_orto", "trad", "Nós íamos à praia todos os verões.", ["Íbamos a la playa todos los veranos."], { c: "acen" }],
+  ["es_orto", "erro", "Mi abuela cocinava muy bien.", ["Mi abuela cocinaba muy bien."], { c: "acen" }],
+  ["es_orto", "dit", "Hoy hace calor, pero mañana va a llover.", ["Hoy hace calor, pero mañana va a llover."], { c: "acen" }],
+  // Conectores básicos
+  ["es_conect", "mc", "Estudio español ___ inglés.", ["e"], { c: "synt", o: ["e", "y"] }],
+  ["es_conect", "mc", "¿Quieres siete ___ ocho?", ["u"], { c: "synt", o: ["u", "o"] }],
+  ["es_conect", "mc", "No es caro, ___ barato.", ["sino"], { c: "synt", o: ["sino", "pero"] }],
+  ["es_conect", "lac", "Leo un libro ___ espero el autobús. (mientras / encuanto)", ["mientras"], { c: "ptlex" }],
+  ["es_conect", "trad", "Eu fiquei em casa porque estava chovendo.", ["Me quedé en casa porque llovía.", "Me quedé en casa porque estaba lloviendo."], { c: "synt" }],
+  ["es_conect", "erro", "Encuanto él trabaja, yo estudio.", ["Mientras él trabaja, yo estudio."], { c: "ptlex" }],
+  ["es_conect", "transf", "Hacía frío. Salí sin abrigo.", ["Aunque hacía frío, salí sin abrigo.", "Salí sin abrigo aunque hacía frío."], { c: "synt", i: "Une las dos frases con «aunque»." }],
+  ["es_conect", "mini", "Escribe 2 frases sobre tu fin de semana usando «pero» y «así que».", ["El sábado quería ir a la playa, pero llovió. Así que me quedé en casa viendo películas."], { c: "synt" }],
+  // Imperativo con usted (refuerzo)
+  ["es_impe", "lac", "___ (pasar, usted), por favor.", ["Pase"], { c: "conj" }],
+  ["es_impe", "lac", "___ (seguir, usted) todo recto hasta la plaza.", ["Siga"], { c: "conj" }],
+  ["es_impe", "trad", "Vire (o senhor) à direita na segunda rua.", ["Gire a la derecha en la segunda calle.", "Tuerza a la derecha en la segunda calle."], { c: "ptlex" }],
+  ["es_impe", "erro", "Señora, abre la ventana, por favor.", ["Señora, abra la ventana, por favor."], { c: "conj" }],
+  // Había (refuerzo)
+  ["es_ser", "mc", "En la fiesta ___ mucha gente.", ["había"], { c: "serestar", o: ["había", "habían", "tenía"] }],
+  ["es_ser", "erro", "Habían muchos coches en la calle.", ["Había muchos coches en la calle."], { c: "serestar" }],
+  ["es_ser", "trad", "Tinha muita gente no show.", ["Había mucha gente en el concierto."], { c: "ptstr" }],
+
   // Dictado
   ["es_dict", "dit", "Ayer hablé con él por teléfono durante una hora.", ["Ayer hablé con él por teléfono durante una hora."], { c: "acen" }],
   ["es_dict", "dit", "Mi hermano vive en Valencia y trabaja en un hospital.", ["Mi hermano vive en Valencia y trabaja en un hospital."], { c: "acen" }],

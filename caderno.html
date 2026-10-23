@@ -273,6 +273,7 @@ const TOPICS = {
     { id: "fr_adv", lv: "A2", n: "Adverbes (bien, bon, beaucoup, très, -ment)", pt: 1 },
     { id: "fr_venirde", lv: "A2", n: "Passé récent (venir de)" },
     { id: "fr_tout", lv: "A2", n: "Tout, toute, tous, toutes" },
+    { id: "fr_conect", lv: "A2", n: "Connecteurs de base (mais, donc, parce que, quand, pendant que)" },
     // B1
     { id: "fr_pcimp", lv: "B1", n: "Passé composé ou imparfait" },
     { id: "fr_pqp", lv: "B1", n: "Plus-que-parfait" },
@@ -334,6 +335,9 @@ const TOPICS = {
     { id: "es_tamb", lv: "A2", n: "También y tampoco", pt: 1 },
     { id: "es_tiempo", lv: "A2", n: "Hace, desde hace, desde", pt: 1 },
     { id: "es_plural", lv: "A2", n: "Plural de sustantivos y adjetivos", pt: 1 },
+    { id: "es_prep", lv: "A2", n: "Preposiciones de lugar y movimiento (a, en, de, hasta)", pt: 1 },
+    { id: "es_orto", lv: "A2", n: "Ortografía (b/v, h, c/z, cc)", pt: 1 },
+    { id: "es_conect", lv: "A2", n: "Conectores básicos (pero, sino, porque, mientras, así que)", pt: 1 },
     // B1
     { id: "es_indimp", lv: "B1", n: "Indefinido o imperfecto" },
     { id: "es_pluscuam", lv: "B1", n: "Pretérito pluscuamperfecto" },
@@ -750,6 +754,16 @@ const SEED_FR = [
   ["fr_tout", "erro", "Tout les enfants jouent dehors.", ["Tous les enfants jouent dehors."], { c: "accadj" }],
   ["fr_tout", "erro", "Elle a lu tous la nuit.", ["Elle a lu toute la nuit."], { c: "accadj" }],
 
+  // Connecteurs de base
+  ["fr_conect", "mc", "Je suis fatigué, ___ je vais me coucher.", ["donc"], { c: "synt", o: ["donc", "parce que", "mais"] }],
+  ["fr_conect", "mc", "Je reste à la maison ___ il pleut.", ["parce qu'"], { c: "synt", o: ["parce qu'", "donc", "mais"] }],
+  ["fr_conect", "mc", "___ j'étais petit, j'habitais à Lyon.", ["Quand"], { c: "synt", o: ["Quand", "Pendant", "Alors"] }],
+  ["fr_conect", "lac", "Je lis le journal ___ je prends mon café. (pendant que / pendant)", ["pendant que"], { c: "synt" }],
+  ["fr_conect", "trad", "Eu gosto de café, mas prefiro chá.", ["J'aime le café, mais je préfère le thé."], { c: "synt" }],
+  ["fr_conect", "trad", "Enquanto você (tu) trabalha, eu cozinho.", ["Pendant que tu travailles, je fais la cuisine.", "Pendant que tu travailles, je cuisine."], { c: "ptlex" }],
+  ["fr_conect", "erro", "Il pleuvait, entonces je suis resté chez moi.", ["Il pleuvait, donc je suis resté chez moi.", "Il pleuvait, alors je suis resté chez moi."], { c: "ptlex" }],
+  ["fr_conect", "mini", "Racontez en 2 phrases un petit problème au travail avec « mais » et « donc ».", ["Je voulais finir le projet, mais l'ordinateur ne marchait pas. Donc j'ai demandé de l'aide à un collègue."], { c: "synt" }],
+
   // Dictée
   ["fr_dictee", "dit", "Les lettres que j'ai écrites hier sont arrivées ce matin.", ["Les lettres que j'ai écrites hier sont arrivées ce matin."], { c: "accpp" }],
   ["fr_dictee", "dit", "Elle est allée au marché et elle a acheté des fleurs.", ["Elle est allée au marché et elle a acheté des fleurs."], { c: "accpp" }],
@@ -1003,6 +1017,43 @@ const SEED_ES = [
   ["es_plural", "trad", "Comprei dois pães e três limões.", ["Compré dos panes y tres limones."], { c: "ptlex" }],
   ["es_plural", "erro", "Mis papeis están en el escritorio.", ["Mis papeles están en el escritorio."], { c: "ptlex" }],
   ["es_plural", "transf", "El joven alemán es amable.", ["Los jóvenes alemanes son amables."], { c: "acen", i: "Pon la frase en plural." }],
+
+  // Preposiciones de lugar y movimiento
+  ["es_prep", "lac", "Esta tarde voy ___ supermercado.", ["al"], { c: "prep" }],
+  ["es_prep", "lac", "Mi hermano vive ___ Valencia.", ["en"], { c: "prep" }],
+  ["es_prep", "mc", "Los sábados juego ___ fútbol con mis amigos.", ["al"], { c: "ptstr", o: ["al", "el", "de"] }],
+  ["es_prep", "mc", "Salí ___ la calle a las nueve.", ["a"], { c: "ptstr", o: ["a", "para", "en"] }],
+  ["es_prep", "trad", "Eu me mudei para Madri no ano passado.", ["Me mudé a Madrid el año pasado.", "El año pasado me mudé a Madrid."], { c: "ptstr" }],
+  ["es_prep", "trad", "Vamos de carro até a praia.", ["Vamos en coche hasta la playa.", "Vamos a la playa en coche."], { c: "prep" }],
+  ["es_prep", "erro", "Me mudé para aquí hace un mes.", ["Me mudé aquí hace un mes."], { c: "ptstr" }],
+  ["es_prep", "erro", "Llegué en casa muy tarde.", ["Llegué a casa muy tarde."], { c: "prep" }],
+  // Ortografía
+  ["es_orto", "mc", "Cuando era niño, ___ al fútbol todos los días.", ["jugaba"], { c: "acen", o: ["jugaba", "jugava"] }],
+  ["es_orto", "mc", "Ayer ___ en casa todo el día.", ["estuve"], { c: "acen", o: ["estuve", "estube"] }],
+  ["es_orto", "mc", "Mi ___ vive en Sevilla.", ["hermano"], { c: "acen", o: ["hermano", "ermano", "irmano"] }],
+  ["es_orto", "mc", "La ___ de hoy es difícil.", ["lección"], { c: "acen", o: ["lección", "leción", "lessión"] }],
+  ["es_orto", "mc", "Me gusta mucho la ___ española.", ["cerveza"], { c: "ptlex", o: ["cerveza", "cervesa", "cerveja"] }],
+  ["es_orto", "trad", "Nós íamos à praia todos os verões.", ["Íbamos a la playa todos los veranos."], { c: "acen" }],
+  ["es_orto", "erro", "Mi abuela cocinava muy bien.", ["Mi abuela cocinaba muy bien."], { c: "acen" }],
+  ["es_orto", "dit", "Hoy hace calor, pero mañana va a llover.", ["Hoy hace calor, pero mañana va a llover."], { c: "acen" }],
+  // Conectores básicos
+  ["es_conect", "mc", "Estudio español ___ inglés.", ["e"], { c: "synt", o: ["e", "y"] }],
+  ["es_conect", "mc", "¿Quieres siete ___ ocho?", ["u"], { c: "synt", o: ["u", "o"] }],
+  ["es_conect", "mc", "No es caro, ___ barato.", ["sino"], { c: "synt", o: ["sino", "pero"] }],
+  ["es_conect", "lac", "Leo un libro ___ espero el autobús. (mientras / encuanto)", ["mientras"], { c: "ptlex" }],
+  ["es_conect", "trad", "Eu fiquei em casa porque estava chovendo.", ["Me quedé en casa porque llovía.", "Me quedé en casa porque estaba lloviendo."], { c: "synt" }],
+  ["es_conect", "erro", "Encuanto él trabaja, yo estudio.", ["Mientras él trabaja, yo estudio."], { c: "ptlex" }],
+  ["es_conect", "transf", "Hacía frío. Salí sin abrigo.", ["Aunque hacía frío, salí sin abrigo.", "Salí sin abrigo aunque hacía frío."], { c: "synt", i: "Une las dos frases con «aunque»." }],
+  ["es_conect", "mini", "Escribe 2 frases sobre tu fin de semana usando «pero» y «así que».", ["El sábado quería ir a la playa, pero llovió. Así que me quedé en casa viendo películas."], { c: "synt" }],
+  // Imperativo con usted (refuerzo)
+  ["es_impe", "lac", "___ (pasar, usted), por favor.", ["Pase"], { c: "conj" }],
+  ["es_impe", "lac", "___ (seguir, usted) todo recto hasta la plaza.", ["Siga"], { c: "conj" }],
+  ["es_impe", "trad", "Vire (o senhor) à direita na segunda rua.", ["Gire a la derecha en la segunda calle.", "Tuerza a la derecha en la segunda calle."], { c: "ptlex" }],
+  ["es_impe", "erro", "Señora, abre la ventana, por favor.", ["Señora, abra la ventana, por favor."], { c: "conj" }],
+  // Había (refuerzo)
+  ["es_ser", "mc", "En la fiesta ___ mucha gente.", ["había"], { c: "serestar", o: ["había", "habían", "tenía"] }],
+  ["es_ser", "erro", "Habían muchos coches en la calle.", ["Había muchos coches en la calle."], { c: "serestar" }],
+  ["es_ser", "trad", "Tinha muita gente no show.", ["Había mucha gente en el concierto."], { c: "ptstr" }],
 
   // Dictado
   ["es_dict", "dit", "Ayer hablé con él por teléfono durante una hora.", ["Ayer hablé con él por teléfono durante una hora."], { c: "acen" }],

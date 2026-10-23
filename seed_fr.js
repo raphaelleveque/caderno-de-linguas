@@ -238,6 +238,16 @@ const SEED_FR = [
   ["fr_tout", "erro", "Tout les enfants jouent dehors.", ["Tous les enfants jouent dehors."], { c: "accadj" }],
   ["fr_tout", "erro", "Elle a lu tous la nuit.", ["Elle a lu toute la nuit."], { c: "accadj" }],
 
+  // Connecteurs de base
+  ["fr_conect", "mc", "Je suis fatigué, ___ je vais me coucher.", ["donc"], { c: "synt", o: ["donc", "parce que", "mais"] }],
+  ["fr_conect", "mc", "Je reste à la maison ___ il pleut.", ["parce qu'"], { c: "synt", o: ["parce qu'", "donc", "mais"] }],
+  ["fr_conect", "mc", "___ j'étais petit, j'habitais à Lyon.", ["Quand"], { c: "synt", o: ["Quand", "Pendant", "Alors"] }],
+  ["fr_conect", "lac", "Je lis le journal ___ je prends mon café. (pendant que / pendant)", ["pendant que"], { c: "synt" }],
+  ["fr_conect", "trad", "Eu gosto de café, mas prefiro chá.", ["J'aime le café, mais je préfère le thé."], { c: "synt" }],
+  ["fr_conect", "trad", "Enquanto você (tu) trabalha, eu cozinho.", ["Pendant que tu travailles, je fais la cuisine.", "Pendant que tu travailles, je cuisine."], { c: "ptlex" }],
+  ["fr_conect", "erro", "Il pleuvait, entonces je suis resté chez moi.", ["Il pleuvait, donc je suis resté chez moi.", "Il pleuvait, alors je suis resté chez moi."], { c: "ptlex" }],
+  ["fr_conect", "mini", "Racontez en 2 phrases un petit problème au travail avec « mais » et « donc ».", ["Je voulais finir le projet, mais l'ordinateur ne marchait pas. Donc j'ai demandé de l'aide à un collègue."], { c: "synt" }],
+
   // Dictée
   ["fr_dictee", "dit", "Les lettres que j'ai écrites hier sont arrivées ce matin.", ["Les lettres que j'ai écrites hier sont arrivées ce matin."], { c: "accpp" }],
   ["fr_dictee", "dit", "Elle est allée au marché et elle a acheté des fleurs.", ["Elle est allée au marché et elle a acheté des fleurs."], { c: "accpp" }],

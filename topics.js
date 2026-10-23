@@ -25,6 +25,7 @@ const TOPICS = {
     { id: "fr_adv", lv: "A2", n: "Adverbes (bien, bon, beaucoup, très, -ment)", pt: 1 },
     { id: "fr_venirde", lv: "A2", n: "Passé récent (venir de)" },
     { id: "fr_tout", lv: "A2", n: "Tout, toute, tous, toutes" },
+    { id: "fr_conect", lv: "A2", n: "Connecteurs de base (mais, donc, parce que, quand, pendant que)" },
     // B1
     { id: "fr_pcimp", lv: "B1", n: "Passé composé ou imparfait" },
     { id: "fr_pqp", lv: "B1", n: "Plus-que-parfait" },
@@ -86,6 +87,9 @@ const TOPICS = {
     { id: "es_tamb", lv: "A2", n: "También y tampoco", pt: 1 },
     { id: "es_tiempo", lv: "A2", n: "Hace, desde hace, desde", pt: 1 },
     { id: "es_plural", lv: "A2", n: "Plural de sustantivos y adjetivos", pt: 1 },
+    { id: "es_prep", lv: "A2", n: "Preposiciones de lugar y movimiento (a, en, de, hasta)", pt: 1 },
+    { id: "es_orto", lv: "A2", n: "Ortografía (b/v, h, c/z, cc)", pt: 1 },
+    { id: "es_conect", lv: "A2", n: "Conectores básicos (pero, sino, porque, mientras, así que)", pt: 1 },
     // B1
     { id: "es_indimp", lv: "B1", n: "Indefinido o imperfecto" },
     { id: "es_pluscuam", lv: "B1", n: "Pretérito pluscuamperfecto" },
