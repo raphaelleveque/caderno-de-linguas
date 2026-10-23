@@ -42,7 +42,7 @@ ${LEARNER(L, lv)}
 Exercise type: ${TYPE_DESC[q.ty]}
 ${q.i ? "Instruction: " + q.i + "\n" : ""}Prompt: ${q.p}
 ${q.ty === "dit" ? `Dictated sentence (the learner must write exactly this sentence; any different word or spelling is an error): ${q.a[0]}` : `Reference answer(s) (any other correct, natural ${LOUT[L]} formulation is also fully correct): ${q.a.join(" | ")}`}
-Target structure: ${tp.n}
+Target structure: ${tp.n}${SUBS[q.t] ? " (" + SUBS[q.t].join("; ") + ")" : ""}
 Learner answer: """${answer}"""
 
 Scoring:
@@ -141,7 +141,7 @@ async function generateForTopic(L, topicId, n, note) {
   const recentErr = APP.attempts.filter(a => a.lang === L && a.topic === topicId && a.score < 2).slice(0, 6).map(a => a.answer);
   const raw = await ask(`Write ${n} new ${LNAME[L]} exercises for one topic, CEFR ${lv}.
 ${LEARNER(L, APP.st[L].level)}
-Topic: ${topicId} — ${tp.n}${note ? "\nContext: " + note : ""}
+Topic: ${topicId} — ${tp.n}${SUBS[topicId] ? "\nSub-points the learner must master (cover them across the batch, giving priority to the ones least represented in the existing prompts below; each item should test one sub-point in depth, not just its surface): " + SUBS[topicId].join("; ") : ""}${note ? "\nContext: " + note : ""}
 The learner already gets multiple choice right almost every time: make items that force PRODUCTION and make him think and fail. Mix: about 1/4 closed (cloze = a 2–4 sentence text with 3–4 blanks ___, base form in parentheses after each blank when needed, "respostas" = one entry per blank in order, alternatives inside an entry separated by |; lac = one blank ___; mc at most 1 per batch and only for a true minimal pair) and 3/4 open (corr = a natural sentence with 0 to 3 realistic Portuguese-speaker errors, about 1 in 5 fully correct, "respostas" = the correct sentence; trad = 1–2 linked Brazilian Portuguese sentences that combine the topic with a classic Portuguese trap; transf = a sentence plus an instruction that forces two changes at once (e.g. person AND tense); mini = a concrete situation in ${LOUT[L]} asking for 1–3 sentences with required words or structures — never ask the learner to recall his own life${hasVoice(L) ? "; dit = a natural sentence to dictate, built to trap silent spelling" : ""}).
 Prefer traps a Portuguese speaker falls into. NEVER add Portuguese words, glosses or translations in parentheses (that gives the answer away): the context of the sentence must be enough. The only allowed hint is the base form of a verb or word in the target language, e.g. (hacer, tú). Vary vocabulary; everyday adult contexts (work, travel, city, tech, history).
 Instructions and situations in ${LOUT[L]} (simple, ${lv}). "respostas" lists 1–3 correct answers. "categoria" is the error category the item targets, one of: ${Object.keys(CATS[L]).join(", ")}.
@@ -174,7 +174,7 @@ async function generateFromHistory(L, n) {
   const errSamples = APP.attempts.filter(a => a.lang === L && a.score < 2).slice(0, 10).map(a => ({ resposta: a.answer, correcao: a.corrected || "", tema: a.topic }));
   const raw = await ask(`Write ${n} new ${LNAME[L]} exercises (CEFR ${lv}) aimed at this learner's biggest weaknesses.
 ${LEARNER(L, lv)}
-Weakest topics: ${weakTopics.map(w => `${w.id} (${TOPIC[w.id].n}, ${Math.round(w.acc * 100)}%)`).join("; ")}
+Weakest topics: ${weakTopics.map(w => `${w.id} (${TOPIC[w.id].n}, ${Math.round(w.acc * 100)}%${SUBS[w.id] ? "; sub-points: " + SUBS[w.id].join(" / ") : ""})`).join("; ")}
 Most frequent error categories (last 8 weeks): ${topCats.join(", ") || "none yet"}
 Recent wrong answers: ${JSON.stringify(errSamples)}
 He masters multiple choice: avoid mc. Favour corr (0–3 hidden errors), cloze texts, two-sentence translations and constrained mini-productions; open production about 3/4 of the time.
