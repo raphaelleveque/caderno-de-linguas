@@ -188,11 +188,14 @@ function renderBlock() {
     h += `<div class="listen"><button class="btn" data-act="listen" data-v="1" ${s.replays >= 3 || s.phase !== "answer" ? "disabled" : ""}>${t("listen")}</button><button class="btn" data-act="listen" data-v="0.7" ${s.replays >= 3 || s.phase !== "answer" ? "disabled" : ""}>${t("slower")}</button><span class="note mono">${s.replays}/3</span>${chosenVoice(L) ? `<span class="note">· ${esc(chosenVoice(L).name)}</span>` : ""}</div>${s.phase === "answer" ? `<div class="row"><button class="btn ghost small" data-act="badAudio">${t("badAudio")}</button></div>` : ""}`;
     if (s.phase !== "answer") h += `<p class="qprompt">${esc(q.p)}</p>`;
   } else {
-    h += `<p class="qprompt ${q.ty === "trad" ? "pt" : ""}">${esc(q.p)}</p>`;
+    if (q.ty === "cloze") {
+      const parts = q.p.split("___"), a = s.phase === "result" ? APP.attempts.find(x => x.id === s.attId) : null;
+      h += `<p class="qprompt cloze">${parts.map((p, i) => esc(p) + (i < parts.length - 1 ? (s.phase === "answer" ? `<input class="blank" id="bl${i}" lang="${L}" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="${i + 1}" value="${esc((s.blanks || [])[i] || "")}">` : clozeCell(q, a, i)) : "")).join("")}</p>`;
+    } else h += `<p class="qprompt ${q.ty === "trad" ? "pt" : ""}">${esc(q.p)}</p>`;
   }
   if (s.phase === "answer") {
     if (q.ty === "mc") h += `<div class="opts">${q.o.map(o => `<button class="opt" data-act="sel" data-v="${esc(o)}" aria-pressed="${s.sel === o}">${esc(o)}</button>`).join("")}</div>`;
-    else h += `<textarea id="ans" rows="${q.ty === "mini" ? 4 : 2}" lang="${L}" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="${t("yourAnswer")}">${esc(s.draft)}</textarea>`;
+    else if (q.ty !== "cloze") h += `<textarea id="ans" rows=""${q.ty === "mini" ? 4 : 2}" lang="${L}" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="${t("yourAnswer")}">${esc(s.draft)}</textarea>`;
     h += `<div class="row"><button class="btn primary" data-act="submit" ${q.ty === "mc" && !s.sel ? "disabled" : ""}>${t("correct")}</button></div>`;
   } else if (s.phase === "correcting") {
     h += `<p class="thinking">${t("correcting")}</p>`;
@@ -206,10 +209,17 @@ function renderBlock() {
   if (s.phase === "result") h += `<div class="row" style="justify-content:flex-end"><button class="btn primary" data-act="next">${s.idx + 1 >= b.qids.length ? t("finish") : t("next")}</button></div>`;
   $app().innerHTML = `<div class="focus">${h}</div>`;
   const ta = document.getElementById("ans"); if (ta) { ta.focus(); ta.oninput = () => { s.draft = ta.value; }; }
+  const bls = [...document.querySelectorAll("input.blank")];
+  bls.forEach((el, i) => { el.oninput = () => { s.blanks = s.blanks || []; s.blanks[i] = el.value; }; el.onkeydown = ev => { if (ev.key === "Enter") { ev.preventDefault(); (bls[i + 1] || el).focus(); } }; });
+  if (bls[0] && s.phase === "answer") bls[0].focus();
+}
+function clozeCell(q, a, i) {
+  const v = a && a.blanks ? (a.blanks[i] || "") : "", e = a ? (a.errors || []).find(x => x.blank === i) : null;
+  return e ? `<span class="mk"><del>${esc(v || "∅")}</del><ins>${esc(e.fix)}</ins></span>` : `<b class="okfill">${esc(v)}</b>`;
 }
 function resultHTML(q, a) {
   const L = q.l, s = APP.screen;
-  const ans = q.ty === "mc" ? `<div class="opts">${q.o.map(o => `<div class="opt ${q.a.includes(o) ? "right" : o === a.answer ? "wrong" : ""}">${esc(o)}</div>`).join("")}</div>`
+  const ans = q.ty === "cloze" ? "" : q.ty === "mc" ? `<div class="opts">${q.o.map(o => `<div class="opt ${q.a.includes(o) ? "right" : o === a.answer ? "wrong" : ""}">${esc(o)}</div>`).join("")}</div>`
     : `<p class="pen">${penHTML(a.answer, a.errors)}</p>`;
   let h = `<div class="row" style="justify-content:space-between">${verdictHTML(a.score)}<span class="pill ${a.dif === "easy" ? "ok" : a.dif === "mid" ? "warn" : "pen"}" title="${esc(t(a.difWhy))}">${t("dif_" + a.dif)}</span></div>${ans}`;
   h += `<p class="why">${esc(t(a.difWhy))}</p>`;
@@ -487,13 +497,14 @@ function closeSegment() {
 async function submitAnswer() {
   const s = APP.screen, b = blk(), q = qById(b.qids[s.idx]);
   const ta = document.getElementById("ans"); if (ta) s.draft = ta.value;
-  const answer = q.ty === "mc" ? s.sel : (s.draft || "").trim();
-  if (!answer) { toast(t("emptyAnswer")); return; }
+  if (q.ty === "cloze") s.blanks = [...document.querySelectorAll("input.blank")].map(el => el.value);
+  const answer = q.ty === "mc" ? s.sel : q.ty === "cloze" ? (s.blanks || []).map(x => x.trim() || "∅").join(" · ") : (s.draft || "").trim();
+  if (!answer || (q.ty === "cloze" && (s.blanks || []).every(x => !x.trim()))) { toast(t("emptyAnswer")); return; }
   s.answerMs = Date.now() - s.qStart; s.phase = "correcting"; render();
   let res = null;
   try {
     if (QTYPES[q.ty].closed) {
-      res = gradeClosed(q, answer);
+      res = gradeClosed(q, answer, s.blanks);
       if (res.score < 2 && APP.sample) { try { const ex = await explainClosed(q, answer); res.errors = res.errors.map(e => ({ ...e, why: ex.why, why_pt: ex.why_pt })); } catch (e) { } }
     } else res = await correctOpen(q, answer);
   } catch (e) { console.warn(e); res = null; }
@@ -504,7 +515,7 @@ async function submitAnswer() {
 function finalizeAttempt(q, answer, res, selfGraded) {
   const s = APP.screen, b = blk(), L = q.l;
   const att = { id: uid("a"), lang: L, qid: q.id, qlv: q.lv, topic: q.t, qcat: q.c, type: q.ty, src: q.src, ts: Date.now(), date: today(), blockId: b.id,
-    answer, score: res.score, targetOk: res.targetOk, errors: res.errors || [], ptInterf: (res.errors || []).some(e => e.pt), orthoErr: (res.errors || []).some(e => e.ortho),
+    answer, blanks: q.ty === "cloze" ? (s.blanks || []) : undefined, score: res.score, targetOk: res.targetOk, errors: res.errors || [], ptInterf: (res.errors || []).some(e => e.pt), orthoErr: (res.errors || []).some(e => e.ortho),
     corrected: res.corrected || "", feedback: res.feedback || "", feedback_pt: res.feedback_pt || "", answerMs: s.answerMs || 0, replays: s.replays || 0, doubts: [], selfGraded,
     srsBefore: APP.st[L].srs[q.id] ? { ...APP.st[L].srs[q.id] } : null };
   const c = classify(att, q); att.dif = c.dif; att.difWhy = c.why;
@@ -521,7 +532,7 @@ function reclassify(att) {
 }
 function nextQuestion() {
   const s = APP.screen, b = blk();
-  s.idx++; s.phase = "answer"; s.draft = ""; s.sel = null; s.replays = 0; s.qStart = Date.now(); s.doubtDraft = ""; s.busy = false;
+  s.idx++; s.phase = "answer"; s.draft = ""; s.sel = null; s.blanks = []; s.replays = 0; s.qStart = Date.now(); s.doubtDraft = ""; s.busy = false;
   if (s.idx >= b.qids.length) return finishBlock();
   render(); window.scrollTo(0, 0);
 }

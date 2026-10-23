@@ -5,7 +5,9 @@ const TYPE_DESC = {
   lac: "fill in the blank (short exact answer)", mc: "multiple choice (answer must be one of the options)",
   trad: "translate the Portuguese sentence", transf: "transform the sentence following the instruction",
   erro: "find and correct the error in the sentence", dit: "dictation (learner hears the sentence and writes it)",
-  mini: "mini-production: 1–3 sentences answering a given situation"
+  mini: "mini-production: 1–3 sentences answering a given situation",
+  cloze: "short text with several blanks (___), each filled with one form",
+  corr: "the sentence may contain zero, one or several errors, or be fully correct; the learner must rewrite it entirely corrected, or copy it unchanged if it is correct (changing a correct form is an error)"
 };
 const LEARNER = (L, lv) => `The learner is a Brazilian Portuguese speaker studying ${LNAME[L]}; current CEFR level ${lv}. ${L === "fr" ? "He grew up speaking French orally, so he writes by ear: watch for phonetic spelling, silent agreements, homophones and accents." : "Portuguese makes him understand almost everything, so his production slides into 'portuñol': watch for Portuguese interference in vocabulary, structure and spelling. His keyboard has no ¿ or ¡: NEVER count a missing opening ¿ or ¡ as an error, and do not list it."}`;
 
@@ -106,7 +108,7 @@ Reply with only JSON: {"aceito":true|false,"nota":0|1|2,"erros":[${ERR_SCHEMA.re
 }
 
 // ---------- geração de questões ----------
-const GEN_ITEM = L => `{"tema":"<topic id>","tipo":"lac|mc|trad|transf|erro|${L ? "dit|" : ""}mini","enunciado":"","instrucao":"","opcoes":[],"respostas":[""],"categoria":"<category id>"}`;
+const GEN_ITEM = L => `{"tema":"<topic id>","tipo":"cloze|corr|lac|mc|trad|transf|erro|${L ? "dit|" : ""}mini","enunciado":"","instrucao":"","opcoes":[],"respostas":[""],"categoria":"<category id>"}`;
 function validateGen(L, raw, fallbackTopic, src, lvOverride) {
   const items = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.questoes) ? raw.questoes : []);
   const out = [];
@@ -121,6 +123,7 @@ function validateGen(L, raw, fallbackTopic, src, lvOverride) {
     let o = null;
     if (ty === "mc") { o = (it.opcoes || []).map(x => String(x).trim()).filter(Boolean); if (o.length < 2 || !o.includes(a[0])) continue; }
     if (ty === "lac" && !p.includes("___")) continue;
+    if (ty === "cloze" && (p.split("___").length - 1 !== a.length || a.length < 2)) continue;
     if (ty === "transf" && !String(it.instrucao || "").trim()) continue;
     const c = CATS[L][it.categoria] ? it.categoria : (Object.keys(CATS[L]).includes("conj") ? "conj" : Object.keys(CATS[L])[0]);
     const tlv = TOPIC[t].lv === "*" ? (lvOverride || APP.st[L].level) : TOPIC[t].lv;
@@ -139,7 +142,7 @@ async function generateForTopic(L, topicId, n, note) {
   const raw = await ask(`Write ${n} new ${LNAME[L]} exercises for one topic, CEFR ${lv}.
 ${LEARNER(L, APP.st[L].level)}
 Topic: ${topicId} — ${tp.n}${note ? "\nContext: " + note : ""}
-Mix: about 1/3 closed (lac = one blank written as ___ with the base form in parentheses when useful, exact short answer; mc = 3 options, one correct) and 2/3 open (trad = a natural Brazilian Portuguese sentence to translate; transf = a sentence plus an instruction in ${LOUT[L]}; erro = a sentence with exactly one realistic learner error; mini = a concrete situation in ${LOUT[L]} asking for 1–3 sentences — never ask the learner to recall his own life${hasVoice(L) ? "; dit = a natural sentence to dictate, built to trap silent spelling" : ""}).
+The learner already gets multiple choice right almost every time: make items that force PRODUCTION and make him think and fail. Mix: about 1/4 closed (cloze = a 2–4 sentence text with 3–4 blanks ___, base form in parentheses after each blank when needed, "respostas" = one entry per blank in order, alternatives inside an entry separated by |; lac = one blank ___; mc at most 1 per batch and only for a true minimal pair) and 3/4 open (corr = a natural sentence with 0 to 3 realistic Portuguese-speaker errors, about 1 in 5 fully correct, "respostas" = the correct sentence; trad = 1–2 linked Brazilian Portuguese sentences that combine the topic with a classic Portuguese trap; transf = a sentence plus an instruction that forces two changes at once (e.g. person AND tense); mini = a concrete situation in ${LOUT[L]} asking for 1–3 sentences with required words or structures — never ask the learner to recall his own life${hasVoice(L) ? "; dit = a natural sentence to dictate, built to trap silent spelling" : ""}).
 Prefer traps a Portuguese speaker falls into. NEVER add Portuguese words, glosses or translations in parentheses (that gives the answer away): the context of the sentence must be enough. The only allowed hint is the base form of a verb or word in the target language, e.g. (hacer, tú). Vary vocabulary; everyday adult contexts (work, travel, city, tech, history).
 Instructions and situations in ${LOUT[L]} (simple, ${lv}). "respostas" lists 1–3 correct answers. "categoria" is the error category the item targets, one of: ${Object.keys(CATS[L]).join(", ")}.
 Do not repeat these existing prompts: ${JSON.stringify(existing)}
@@ -156,7 +159,7 @@ ${LEARNER(L, lv)}
 Errors (learner text → correction, category): ${JSON.stringify(errs.slice(0, 8))}
 Choose the topic id from this list (any level):
 ${topicList(L)}
-Use types trad, transf, erro, lac or mc. Instructions in ${LOUT[L]} (simple). "categoria" from: ${Object.keys(CATS[L]).join(", ")}.
+Use types corr, trad, transf, cloze or lac (avoid mc). Instructions in ${LOUT[L]} (simple). "categoria" from: ${Object.keys(CATS[L]).join(", ")}.
 Reply with only a JSON array of items like: ${GEN_ITEM(false)}`, { cache: false });
   return validateGen(L, raw, null, src);
 }
@@ -174,9 +177,9 @@ ${LEARNER(L, lv)}
 Weakest topics: ${weakTopics.map(w => `${w.id} (${TOPIC[w.id].n}, ${Math.round(w.acc * 100)}%)`).join("; ")}
 Most frequent error categories (last 8 weeks): ${topCats.join(", ") || "none yet"}
 Recent wrong answers: ${JSON.stringify(errSamples)}
-Avoid the formats he already masters; favour open production (trad, transf, erro, mini) about 2/3 of the time.
+He masters multiple choice: avoid mc. Favour corr (0–3 hidden errors), cloze texts, two-sentence translations and constrained mini-productions; open production about 3/4 of the time.
 Topic ids allowed: ${levelTopics(L, lv).map(t => t.id).join(", ")}. "categoria" from: ${Object.keys(CATS[L]).join(", ")}.
-Rules: no Portuguese hints in parentheses, the context must be enough; lac has one ___ blank; mc has 3 options with the answer among them; transf has an instruction; situations never ask him to recall his own life.
+Rules: no Portuguese hints in parentheses, the context must be enough; lac has one ___ blank; cloze has one respostas entry per ___; mc has 3 options with the answer among them; transf has an instruction; situations never ask him to recall his own life.
 Reply with only a JSON array of items like: ${GEN_ITEM(false)}`, { cache: false });
   return validateGen(L, raw, weakTopics[0] && weakTopics[0].id, "gen", lv);
 }

@@ -150,6 +150,9 @@ textarea:focus,input:focus,select:focus{border-color:var(--accent);outline:none}
 .opt[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
 .opt.right{border-color:var(--ok);border-width:2px;background:var(--ok-soft);color:var(--ink)}
 .opt.wrong{border-color:var(--pen);border-width:2px;background:var(--pen-soft);color:var(--ink);text-decoration:line-through;text-decoration-color:var(--pen)}
+.cloze{line-height:2.4}
+input.blank{display:inline-block;width:auto;min-width:5ch;max-width:16ch;field-sizing:content;font:inherit;font-family:var(--body);font-size:18px;padding:2px 6px;margin:0 3px;border:0;border-bottom:2px solid var(--accent);border-radius:4px 4px 0 0;background:var(--accent-soft);color:var(--ink)}
+.okfill{color:var(--ok);font-family:var(--hand);font-size:20px;font-weight:400}
 .listen{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 
 /* Correção em caneta vermelha */

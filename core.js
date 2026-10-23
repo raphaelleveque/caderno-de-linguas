@@ -232,12 +232,13 @@ function buildBlockItems(L) {
   const pickFrom = cands => {
     const ok = cands.filter(q => (topicCount[q.t] || 0) < 2 && !chosen.includes(q.id));
     if (!ok.length) return null;
-    const wantClosed = closedShare() < 0.34;
+    const wantClosed = closedShare() < 0.25;
     const pref = ok.filter(q => QTYPES[q.ty].closed === wantClosed);
     const list = pref.length ? pref : ok;
-    const tot = list.reduce((s, q) => s + weight(q.t), 0);
+    const w = q => weight(q.t) * (q.ty === "mc" ? 0.3 : 1); // múltipla escolha quase não ensina mais nada
+    const tot = list.reduce((s, q) => s + w(q), 0);
     let r = Math.random() * tot;
-    for (const q of list) { r -= weight(q.t); if (r <= 0) return q; }
+    for (const q of list) { r -= w(q); if (r <= 0) return q; }
     return list[list.length - 1];
   };
   for (const q of priority) { if (chosen.length >= size) break; if ((topicCount[q.t] || 0) < 2) add(q); }
@@ -267,7 +268,20 @@ function startSession(L) {
 // ---------- correção local (fechadas) ----------
 const normTxt = s => String(s || "").replace(/[¿¡]/g, "").trim().replace(/[’`´]/g, "'").replace(/\s+/g, " ").replace(/\s*([?!:;])/g, " $1").toLowerCase();
 const stripAcc = s => s.normalize("NFD").replace(/[̀-ͯ]/g, "");
-function gradeClosed(q, answer) {
+// Texto com lacunas: cada lacuna aceita alternativas separadas por "|"
+function gradeCloze(q, blanks) {
+  let wrong = 0, accentOnly = 0; const errors = [];
+  q.a.forEach((alts, i) => {
+    const opts = String(alts).split("|"), v = (blanks[i] || "").trim(), n = normTxt(v);
+    if (opts.some(o => normTxt(o) === n)) return;
+    if (n && opts.some(o => stripAcc(normTxt(o)) === stripAcc(n))) { accentOnly++; errors.push({ cat: q.l === "fr" ? "ortho" : "acen", frag: v, fix: opts[0], why: "", why_pt: "", pt: false, ortho: true, blank: i }); return; }
+    wrong++; errors.push({ cat: q.c, frag: v || "∅", fix: opts[0], why: "", why_pt: "", pt: !!TOPIC[q.t].pt, ortho: false, blank: i });
+  });
+  const score = wrong === 0 ? (accentOnly ? 1 : 2) : (wrong === 1 && q.a.length >= 3 ? 1 : 0);
+  return { score, targetOk: score > 0, errors };
+}
+function gradeClosed(q, answer, blanks) {
+  if (q.ty === "cloze") return gradeCloze(q, blanks || []);
   const a = normTxt(answer);
   if (q.a.some(x => normTxt(x) === a)) return { score: 2, targetOk: true, errors: [] };
   if (q.ty !== "mc" && a && q.a.some(x => stripAcc(normTxt(x)) === stripAcc(a))) {
