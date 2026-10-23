@@ -210,8 +210,9 @@ function topicMastery(L, id) {
   const rec = tmRec(L, id), subsN = (SUBS[id] || []).length;
   const since = rec.failedTs || 0, from28 = addDays(today(), -27);
   const all = APP.attempts.filter(a => a.lang === L && a.topic === id && a.score != null && a.ts > since);
-  const recent = all.filter(a => a.date >= from28);
-  const acc = recent.length ? recent.reduce((x, a) => x + a.score, 0) / (2 * recent.length) : 0;
+  // contagem sem janela de tempo (com ~45 temas por língua, 12 respostas por tema levam meses); acerto = últimas 12
+  const recent = all.slice().sort((a, b) => b.ts - a.ts), last12 = recent.slice(0, MASTER.minN);
+  const acc = last12.length ? last12.reduce((x, a) => x + a.score, 0) / (2 * last12.length) : 0;
   const subDays = Array.from({ length: subsN }, () => new Set());
   for (const a of all) if (attOk(a)) for (const k of attSubs(a)) if (subDays[k]) subDays[k].add(a.date);
   const subsOk = subDays.filter(d => d.size >= MASTER.subDays).length;
