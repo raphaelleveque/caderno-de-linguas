@@ -245,6 +245,16 @@ button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--acc
 .field{display:grid;gap:5px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom, 0px));background:var(--ink);color:var(--paper);padding:9px 15px;border-radius:9px;font-size:14.5px;z-index:9;max-width:calc(100% - 32px)}
 @media (prefers-reduced-motion:reduce){.tbar i{transition:none}}
+
+.ms-list{display:grid;gap:12px;margin-top:6px}
+.ms-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start}
+.ms-main{display:grid;gap:4px;min-width:0}
+.ms-main .nm{font-size:14.5px;overflow-wrap:anywhere}
+.ms-main .tr{height:6px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.ms-main .tr i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.ms-main .tr i.lo{background:var(--pen)}
+.ms-main .tr i.mid{background:var(--warn)}
+.ms-row .pill{white-space:nowrap}
 </style>
 <div id="app"></div>
 <script>
@@ -562,7 +572,7 @@ const ESSAY_TASKS = {
 // Subpontos de cada tema A2: o gerador cobre todos (priorizando os menos treinados) e o corretor sabe o que o tema exige.
 const SUBS = {
   fr_preg: ["-er, -ir (-iss-), -re au présent", "manger/nous mangeons, commencer/nous commençons", "acheter, préférer, appeler, jeter (accent ou consonne double)", "terminaisons muettes : -e, -es, -ent"],
-  fr_pres: ["être, avoir, aller, faire", "pouvoir, vouloir, devoir", "prendre, venir, mettre", "boire, voir, dire, lire, écrire"],
+  fr_pres: ["être, avoir, aller, faire", "pouvoir, vouloir, devoir, savoir", "prendre, venir, mettre", "boire, voir, dire, lire, écrire"],
   fr_pc: ["auxiliaire avoir ou être", "verbes de mouvement avec être", "accord du participe avec être", "verbes pronominaux au passé composé"],
   fr_imp: ["formation (base de nous + -ais)", "être → étais", "manger → mangeais, commencer → commençais", "habitude et description au passé"],
   fr_fproche: ["aller + infinitif", "négation : je ne vais pas…", "pronom : je vais le faire"],
@@ -580,7 +590,7 @@ const SUBS = {
   fr_cest: ["c'est + nom, il/elle est + profession ou adjectif", "c'est + adjectif (commentaire général)", "il y a"],
   fr_quique: ["qui sujet", "que (qu') complément", "qui ne s'élide jamais"],
   fr_adv: ["bien/bon, mal/mauvais", "très/beaucoup", "adverbes en -ment"],
-  fr_venirde: ["venir de + infinitif", "venir de au présent et à l'imparfait"],
+  fr_venirde: ["venir de + infinitif (conjugaison de venir)", "venir de ou passé composé (action très récente)"],
   fr_tout: ["tout, toute, tous, toutes + article", "tous les jours, toute la journée"],
   fr_toniq: ["moi, toi, lui, elle, nous, vous, eux, elles", "après préposition (avec lui, chez moi)", "pour insister (moi, je…)", "on = nous (accord du participe)"],
   fr_indef: ["quelqu'un, quelque chose", "chaque, plusieurs, quelques", "personne, rien"],
@@ -603,7 +613,7 @@ const SUBS = {
   fr_prept: ["il y a (passé)", "depuis (durée qui continue)", "pendant (durée finie)", "dans (futur)", "en (durée d'une action, année, mois)", "pour (durée prévue)"],
   fr_geo: ["à + ville", "en / au / aux + pays", "venir de / du / des", "chez + personne", "en voiture, en bus, à pied, à vélo", "sur, sous, dans, devant, en face de, près de"],
   fr_quel: ["quel, quelle, quels, quelles", "inversion (parle-t-il, a-t-elle)", "combien de, depuis quand, à quelle heure", "qu'est-ce que / que"],
-  fr_genre: ["-age masculin (le voyage, le message, le paysage)", "noms féminins en français et masculins en portugais (la mer, la fin, la valeur, la chaleur, la dent, la planète, la vidéo, l'odeur, l'équipe)", "noms masculins en français et féminins en portugais (le lait, le garage, l'arbre)"],
+  fr_genre: ["-age masculin (le voyage, le message, le paysage)", "noms féminins en français et masculins en portugais (la mer, la fin, la valeur, la chaleur, la dent, la planète, la vidéo, l'odeur, l'équipe)", "noms masculins en français et féminins en portugais (l'arbre, le nuage, le personnage, le pourcentage, le garage)"],
   es_pres: ["e>ie, o>ue, e>i", "yo irregular (hago, pongo, salgo, tengo, digo)", "ser, ir, estar"],
   es_ser: ["ser: identidad, origen, profesión, hora, lugar de un evento", "estar: ubicación, estado", "hay (existencia) o está (ubicación de algo conocido)", "había (nunca habían) en pasado"],
   es_gustar: ["me gusta / me gustan", "a mí me, a ellos les", "doler, encantar, interesar, parecer, quedar, apetecer", "a mí también / tampoco / sí / no"],
@@ -646,6 +656,96 @@ const SUBS = {
   es_hora: ["números 30–1000 (y solo entre decenas y unidades)", "cien / ciento, doscientos/as", "apócope (veintiún, primer, tercer)", "horas (es la una, son las dos, menos cuarto)", "fechas (el 3 de mayo)"],
   es_prept: ["por la mañana / tarde / noche", "el lunes, en verano, en 2020", "de… a, desde… hasta", "en coche / en tren / a pie", "llegar a"],
   es_genero: ["-aje masculino (el viaje, el paisaje, el mensaje, el garaje)", "femeninos en español y masculinos en portugués (la leche, la sal, la miel, la nariz, la costumbre, la sangre)", "masculinos en español y femeninos en portugués (el color, el dolor, el olor, el árbol, el equipo)"]
+};
+
+// Subponto(s) treinado(s) por cada questão fixa A2, na ordem em que aparecem no banco (índices de SUBS[tema]).
+// Questões acrescentadas depois levam o subponto no próprio item ({ s: … }).
+const SUBTAG = {
+  fr_preg: [[0, 3], 3, 1, 1, 0, 0, 2, 2, 3, 0, 0, 0, 0, 0, 3, 0, 3, 1, [1, 3], 0, [3, 1, 0], 3],
+  fr_pres: [0, 2, 1, 2, 0, 1, 1, 3, 0, 1],
+  fr_pc: [[1, 2], 0, 1, 1, [3, 0], [1, 2], 0, [0, 2], [1, 2], [0, 1], 2, 0, [1, 2, 0]],
+  fr_imp: [3, [0, 3], 2, 0, [1, 3], 3, 0, 3, 0, 3, [1, 0], [1, 2], 0, 2],
+  fr_fproche: [0, 0, 0, 0, 1, 0, 0, 0, 0],
+  fr_art: [1, 2, 1, 3, 1, 2, 0, 3, 2, 1, [2, 3]],
+  fr_neg: [0, 1, 1, [0, 3], 1, 0, 3, 2, 0, [1, 2]],
+  fr_adj: [[0, 1], [0, 3], 2, [0, 3], 0, [0, 3], [0, 1], 0, 0, 3, [0, 2], 0, 0, 1, 0],
+  fr_poss: [1, 0, 2, 2, [2, 3], 0, 0, 1, 0, [2, 0], [1, 0], 3, 2],
+  fr_prep: [0, 0, 0, 1, 1, 0, [0, 1], 0, 2, [0, 1], 0],
+  fr_cod: [0, 1, 1, 0, [0, 3], 2, [0, 3], [1, 2], 2, [0, 1, 3], 2],
+  fr_comp: [1, 3, 1, 0, [1, 3], 2, 1, 0, 0, 2, 3, [1, 3], 1, 2],
+  fr_quest: [1, 2, 1, [1, 0], 1, 0, 0, 2, [1, 2]],
+  fr_impe: [0, 1, 0, 3, 0, 1, 0, 0, 0, 2, 1],
+  fr_pronom: [0, 0, 1, 1, 0, 1, 1, 0, [3, 2], 2, 4, 1],
+  fr_plur: [0, 0, 0, 1, 0, 0, 1, 0],
+  fr_cest: [0, 0, 2, 0, 2, 1, 0, 0, 1, [0, 1, 2]],
+  fr_quique: [1, 0, 1, 0, 0, 1, [0, 2], 0, 1, [0, 1]],
+  fr_adv: [0, 0, 1, 2, 2, [1, 0], 0, 1],
+  fr_venirde: [0, 0, 1, 0, 0, 0, 1, 0],
+  fr_tout: [0, 0, 1, 1, 1, 0, 0, 1, 0, 1],
+  fr_toniq: [[2, 0], 1, 1, 0, 3, 3, 3, [2, 3]],
+  fr_indef: [[0, 1], 1, 0, 0, 2, 2, 2, [0, 1]],
+  fr_yen1: [[0, 1], 1, 0, 1, [0, 2], [0, 1], 1, [0, 1]],
+  fr_pcimp1: [[1, 2], 0, 2, 2, 1, 0, 1, 1],
+  fr_impron: [[0, 2], 0, 1, 2, 1, [0, 2], 1, [2, 1]],
+  fr_modal: [[0, 1], [0, 2], 1, [2, 1], 0, 1, 1, [0, 1]],
+  fr_condpol: [[0, 1], 2, 1, 0, 1, [0, 1], [1, 2], [0, 1]],
+  fr_verbprep: [[0, 1], 1, 2, 1, [1, 0], 0, 2, [0, 1]],
+  fr_conect: [0, 1, 2, 2, 0, 2, 0, 0, 1],
+  fr_partitif: [[0, 1], [3, 0, 1], [4, 1], 2, [0, 1], 3, [1, 3], 3, 1, [4, 1], 3, 1, [3, 1]],
+  fr_artdef: [3, 4, 2, 6, 1, 1, 2, 3, 5, 5, 2, 3, [1, 4], [1, 3, 2]],
+  fr_constr: [[0, 2], [1, 2, 5], [1, 2, 5], [3, 5], [4, 2], 0, 1, 2, 2, 0, 4, [3, 1], [0, 1], [0, 2], 5, [2, 1]],
+  fr_cplace: [[1, 2], [0, 1], 1, 2, 2, 1, 0, 2, 1, [1, 2], 2, [0, 2]],
+  fr_ppirr: [[0, 1], [1, 0], 0, [2, 0], [3, 4], [3, 4], 1, 0, 3, [3, 4], [1, 0], 0, [3, 0], 3],
+  fr_negpc: [[3, 4], 1, 1, 1, 3, 2, 4, [2, 1], 3, 1, 2],
+  fr_savconn: [[0, 1], [0, 1], 3, 2, 2, 3, [0, 1], 2, 2, 2, [1, 0], 3, [0, 2]],
+  fr_nombres: [0, [0, 1], 1, 2, 0, 3, 3, [3, 2], 2],
+  fr_prept: [[0, 1, 3], [2, 4], [4, 5], [1, 4], 1, 0, 2, 3, 1, [2, 0], 3, [0, 1, 3]],
+  fr_geo: [2, 1, 3, 4, 1, 0, 3, 5, 5, [3, 4], [0, 5], [1, 0, 4]],
+  fr_quel: [0, 2, 1, 1, 2, 2, 0, 2, 3, 3, [0, 1, 2], 1],
+  fr_genre: [[0, 1], [1, 0], [1, 0], 0, 1, 1, 1, [0, 2], 1, 1, [0, 1]],
+  fr_fut: [1, 1, [2, 0], 1, [2, 0], 1, 1, 1, 1, [3, 1], 3, 3],
+  es_pres: [1, 0, 0, 1, 0, 1, 0, 1, 1, 0, [1, 0]],
+  es_ser: [1, 2, 0, 0, 1, 1, 2, 2, 1, [1, 0], 3, 3, 3, [3, 1], [0, 1, 2], [1, 2], 2, [0, 1], 0],
+  es_gustar: [0, 0, 1, 2, 0, 0, 1, 0, 0, [0, 2], [0, 2], 1, 2, 3, 0, 0, 2, 2],
+  es_indef: [1, 1, 1, 0, 1, 0, 0, 1, 0, [1, 2], 1],
+  es_perf: [1, 2, [0, 1], [0, 1], [0, 1], [0, 1], 2, 2, 1, 2],
+  es_imp: [0, 1, 2, 2, 2, 2, 2, 0, 2, 1, 2],
+  es_perif: [0, 1, 0, 0, 1, 0, 1, 0, [1, 0]],
+  es_art: [2, 2, 1, 1, 2, 2, 2, 2, 1, 2],
+  es_pron: [0, 1, 0, 1, [0, 2], 2, [0, 2], [0, 2], [0, 1], 0],
+  es_muy: [1, 0, 2, 1, 0, 2, 0, 2, 0, [0, 1], 1],
+  es_a: [0, 1, 0, 0, 0, 0, [0, 1], 0, 0, 0],
+  es_comp: [2, 1, 2, 2, 3, 0, 1, 1, 0, [1, 0], [3, 2], 3, 5, 4],
+  es_impe: [1, 2, 0, 0, 2, 1, 1, 2, 2, 2, 2, 2, 2, [2, 4], 1, [3, 4], 4, [2, 4]],
+  es_acen: [0, 0, 0, 2, 2, 2, 2, 2, 2, 0, [0, 1], 3, 1, [0, 2]],
+  es_reflex: [0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 2, 3],
+  es_oblig: [0, 1, 0, 0, 1, 0, [1, 0], [0, 1]],
+  es_pos: [1, 2, 1, [2, 1], 2, 2, 1, 2, 1, 3, [0, 1]],
+  es_tamb: [0, 0, 0, 0, 0, 0, 0, 0, [0, 1]],
+  es_tiempo: [2, 0, 1, [2, 3], 0, 2, 0, [2, 0], [2, 0], [1, 2, 0]],
+  es_plural: [2, 1, 0, 0, 0, 0, 0, [2, 0]],
+  es_indefq: [[0, 2], 1, 3, 2, [0, 1], [2, 1], 0, [1, 0]],
+  es_prepron: [[1, 0], 2, 0, 1, 0, 0, 0, [1, 0]],
+  es_posinf: [[1, 3, 2], 1, 2, 3, 3, [2, 1], [3, 0], 3],
+  es_fut: [1, 1, 1, 1, 1, [1, 0], 1, [1, 0]],
+  es_indimp1: [[1, 2], 0, 2, 2, 1, 0, 1, 1],
+  es_condcort: [[0, 1, 2], 2, [1, 2], 1, 2, [0, 1], 1, [2, 1]],
+  es_porpara1: [[0, 1], 1, 0, 1, [1, 0], [0, 1], 1, [0, 1]],
+  es_interrog: [[0, 1, 3], 0, [1, 2], 4, 0, [3, 1], 2, [2, 1, 0]],
+  es_yatod: [[0, 1, 2], 1, 0, 0, [0, 1], 2, 0, [0, 1]],
+  es_prep: [0, 0, 0, 2, 0, 1, 0, 0, [0, 2]],
+  es_orto: [0, 0, 1, 3, 2, 0, 0, [2, 0], [0, 1]],
+  es_conect: [0, 0, 1, 3, 2, 3, 1, [1, 2]],
+  es_artuso: [0, 1, 1, 2, 4, 3, 5, 1, 6, 1, [0, 4], 3, 1],
+  es_regimen: [2, 2, [2, 3], 0, [1, 0], 1, 3, 2, 0, 0, 0, 2, 2, 0, [2, 0]],
+  es_oi: [[0, 2], [0, 2], 3, [1, 0], 0, 3, [3, 0], 0, 1, [0, 2], [0, 2], [0, 1]],
+  es_presirr: [[0, 5, 1], 2, 3, 4, 1, 4, 5, [3, 4], [1, 0], [1, 4], 2, 4, 4, 4, [0, 2, 1]],
+  es_indefirr: [0, 1, 3, 4, 5, [2, 0], 0, 1, 3, 2, 0, 0, [0, 1], [0, 2, 4]],
+  es_partic: [0, 0, 0, [1, 2], 0, 2, 1, [0, 2], 1, [1, 0], 0, [1, 0]],
+  es_hora: [[0, 2], 1, 1, 2, 3, 4, 1, 3, 3, 4],
+  es_prept: [[0, 1], 3, 2, 0, [1, 3], [3, 4], [1, 2], 0, [3, 2], [0, 3]],
+  es_genero: [[0, 1], [2, 1], [1, 0], [1, 2], 0, 2, 2, 2, 2, 0, 1, [2, 0]],
+  es_perif2: [[1, 0, 2], 2, [1, 3], 2, 0, 3, 2, [1, 0]]
 };
 
 // Banco inicial A2 — francês. [tema, tipo, enunciado, respostas, extra]
@@ -1223,6 +1323,243 @@ const SEED_FR = [
   ["fr_impe", "corr", "Vas à la boulangerie et achètes du pain !", ["Va à la boulangerie et achète du pain !"], { c: "conj" }],
   ["fr_tout", "cloze", "___ mes amis sont venus, ___ la famille aussi, et ___ les voisines.", ["Tous", "toute", "toutes"], { c: "accadj" }],
   ["fr_tout", "corr", "J'ai travaillé tout la semaine et tous le week-end.", ["J'ai travaillé toute la semaine et tout le week-end."], { c: "accadj" }],
+  // ===== Banco A2 completado (≈16 por tema, ≥3 por subponto) =====
+  ["fr_pres", "cloze", "Le soir, je ___ (lire) un peu et ma femme ___ (écrire) son journal. Les enfants ___ (voir) un dessin animé.", ["lis", "écrit", "voient"], { c: "conj", s: 3 }],
+  ["fr_pres", "cloze", "Qu'est-ce que vous ___ (dire) ? Vous ___ (boire) quelque chose ? Nous, nous ___ (faire) une pause.", ["dites", "buvez", "faisons"], { c: "conj", s: [3, 0] }],
+  ["fr_pres", "corr", "Je mets mon manteau et nous prendons le bus.", ["Je mets mon manteau et nous prenons le bus."], { c: "conj", s: 2 }],
+  ["fr_pres", "corr", "Ils font la fête parce qu'ils peuvent dormir demain.", ["Ils font la fête parce qu'ils peuvent dormir demain."], { c: "conj", s: [0, 1] }],
+  ["fr_pres", "trad", "Vocês (vous) vêm conosco? Nós queremos sair às oito.", ["Vous venez avec nous ? Nous voulons partir à huit heures.", "Vous venez avec nous ? Nous voulons sortir à huit heures."], { c: "conj", s: [2, 1] }],
+  ["fr_pres", "transf", "Elle va au marché, elle voit ses amies et elle boit un café.", ["Elles vont au marché, elles voient leurs amies et elles boivent un café."], { c: "conj", s: [0, 3], i: "Mettez la phrase au pluriel (elles)." }],
+  ["fr_pc", "cloze", "Hier, nous ___ (se promener) au parc et Julie ___ (se reposer) sur un banc.", ["nous sommes promenés|nous sommes promenées", "s'est reposée"], { c: "accpp", s: 3 }],
+  ["fr_pc", "corr", "Ce matin, je me suis levé tard et je me suis dépêché.", ["Ce matin, je me suis levé tard et je me suis dépêché."], { c: "accpp", s: 3 }],
+  ["fr_pc", "corr", "Mes sœurs se sont disputé hier soir.", ["Mes sœurs se sont disputées hier soir."], { c: "accpp", s: [3, 2] }],
+  ["fr_imp", "corr", "Quand j'été petit, nous habitions à Rio.", ["Quand j'étais petit, nous habitions à Rio."], { c: "conj", s: [1, 0] }],
+  ["fr_imp", "transf", "Nous finissons tôt et nous prenons le train.", ["Avant, nous finissions tôt et nous prenions le train."], { c: "conj", s: [0, 3], i: "Commencez par « Avant, » et mettez la phrase à l'imparfait." }],
+  ["fr_fproche", "cloze", "Le film ? Je vais ___ voir ce soir. Ta mère ? Je vais ___ téléphoner demain.", ["le", "lui"], { c: "pron", s: 2 }],
+  ["fr_fproche", "cloze", "Les clés ? Je ne vais pas ___ oublier. Paul ? Nous n'allons pas ___ attendre.", ["les", "l'"], { c: "pron", s: [1, 2] }],
+  ["fr_fproche", "corr", "Je vais ne pas sortir ce soir.", ["Je ne vais pas sortir ce soir."], { c: "synt", s: 1 }],
+  ["fr_fproche", "corr", "Je le vais faire demain.", ["Je vais le faire demain."], { c: "synt", s: 2 }],
+  ["fr_fproche", "transf", "Ils vont venir et ils vont rester.", ["Ils ne vont pas venir et ils ne vont pas rester."], { c: "synt", s: 1, i: "Mettez la phrase à la forme négative." }],
+  ["fr_fproche", "trad", "Eu não vou ligar para ela.", ["Je ne vais pas l'appeler.", "Je ne vais pas lui téléphoner."], { c: "pron", s: [2, 1] }],
+  ["fr_fproche", "trad", "Nós vamos visitar eles no domingo.", ["Nous allons les voir dimanche.", "Nous allons leur rendre visite dimanche."], { c: "ptlex", s: 2 }],
+  ["fr_art", "cloze", "J'ai ___ chien et ___ chat. ___ chien s'appelle Rex et ___ chat dort toute la journée.", ["un", "un", "Le", "le"], { c: "art", s: 0 }],
+  ["fr_art", "cloze", "C'est ___ ville très agréable. ___ ville où j'habite est petite, mais ___ gens sont sympas.", ["une", "La", "les"], { c: "art", s: 0 }],
+  ["fr_art", "corr", "J'ai lu un livre que tu m'as donné : un livre est super.", ["J'ai lu le livre que tu m'as donné : le livre est super.", "J'ai lu le livre que tu m'as donné : il est super."], { c: "art", s: 0 }],
+  ["fr_art", "corr", "Les enfants aiment des bonbons.", ["Les enfants aiment les bonbons."], { c: "art", s: [0, 1] }],
+  ["fr_art", "trad", "O sol está forte e o céu está azul.", ["Le soleil est fort et le ciel est bleu.", "Il y a beaucoup de soleil et le ciel est bleu."], { c: "art", s: 0 }],
+  ["fr_neg", "cloze", "___ n'est venu à la réunion et ___ n'a changé.", ["Personne", "rien"], { c: "synt", s: 2 }],
+  ["fr_neg", "corr", "Rien ne marche pas dans cette maison !", ["Rien ne marche dans cette maison !"], { c: "synt", s: 2 }],
+  ["fr_neg", "corr", "Je ne veux pas jamais revenir ici.", ["Je ne veux jamais revenir ici."], { c: "synt", s: 3 }],
+  ["fr_neg", "corr", "Il ne mange pas de viande et il ne boit jamais d'alcool.", ["Il ne mange pas de viande et il ne boit jamais d'alcool."], { c: "synt", s: 3 }],
+  ["fr_neg", "transf", "Je peux venir et je veux manger.", ["Je ne peux pas venir et je ne veux pas manger."], { c: "synt", s: [3, 0], i: "Mettez les deux verbes à la forme négative avec « ne… pas »." }],
+  ["fr_neg", "trad", "Nada mudou e ninguém sabe nada.", ["Rien n'a changé et personne ne sait rien."], { c: "synt", s: [2, 1] }],
+  ["fr_adj", "cloze", "Les appartements sont ___ (beau) et les quartiers sont ___ (génial).", ["beaux", "géniaux"], { c: "accadj", s: 1 }],
+  ["fr_poss", "corr", "À qui est ce stylo ? — Il est de Paul.", ["À qui est ce stylo ? — Il est à Paul."], { c: "ptstr", s: 3 }],
+  ["fr_poss", "cloze", "— Ce sont vos valises ? — Oui, elles sont à ___ (nous). — Et ce manteau, il est à ___ (elle) ?", ["nous", "elle"], { c: "pron", s: 3 }],
+  ["fr_poss", "trad", "A amiga dele e o hotel deles são ótimos.", ["Son amie et leur hôtel sont super.", "Son amie et leur hôtel sont très bien."], { c: "art", s: [0, 1] }],
+  ["fr_prep", "cloze", "Le chat est ___ la table (en bas), le livre est ___ la table (en haut) et mes clés sont ___ mon sac (à l'intérieur).", ["sous", "sur", "dans"], { c: "prep", s: 2 }],
+  ["fr_prep", "cloze", "La voiture est ___ la maison (en face) et le jardin est ___ (à l'arrière).", ["devant", "derrière"], { c: "prep", s: 2 }],
+  ["fr_prep", "corr", "J'ai laissé mon téléphone en la voiture.", ["J'ai laissé mon téléphone dans la voiture."], { c: "prep", s: 2 }],
+  ["fr_prep", "corr", "Il y a un café à côté de chez moi, en face du parc.", ["Il y a un café à côté de chez moi, en face du parc."], { c: "prep", s: [0, 2] }],
+  ["fr_prep", "trad", "O gato está embaixo da cama e as chaves estão em cima da mesa.", ["Le chat est sous le lit et les clés sont sur la table."], { c: "prep", s: 2 }],
+  ["fr_cod", "corr", "Je veux la voir demain et je vais lui écrire ce soir.", ["Je veux la voir demain et je vais lui écrire ce soir."], { c: "pron", s: 3 }],
+  ["fr_cod", "corr", "Je connais lui depuis longtemps.", ["Je le connais depuis longtemps."], { c: "pron", s: [0, 3] }],
+  ["fr_cod", "cloze", "Paul ? Je ___ attends depuis une heure. Je ___ ai envoyé trois messages, mais il ne ___ lit pas !", ["l'", "lui", "les"], { c: "pron", s: [2, 0, 1] }],
+  ["fr_cod", "transf", "Elle aide ses parents et elle écrit à ses parents.", ["Elle les aide et elle leur écrit."], { c: "pron", s: 2, i: "Remplacez « ses parents » et « à ses parents » par des pronoms." }],
+  ["fr_cod", "trad", "Eu escrevi para eles ontem.", ["Je leur ai écrit hier."], { c: "pron", s: [1, 3] }],
+  ["fr_comp", "corr", "Lyon est moins grande de Paris.", ["Lyon est moins grande que Paris."], { c: "synt", s: 0 }],
+  ["fr_comp", "cloze", "C'est l'hôtel le ___ cher ___ quartier : il coûte seulement 40 euros !", ["moins", "du"], { c: "synt", s: 3 }],
+  ["fr_quest", "cloze", "— ___ est-ce que tu fais ? — Rien. — Tu veux faire ___ ce soir ?", ["Qu'", "quoi"], { c: "synt", s: 2 }],
+  ["fr_quest", "transf", "Vous habitez ici.", ["Vous habitez ici ? Est-ce que vous habitez ici ? Habitez-vous ici ?"], { c: "synt", s: 0, i: "Posez la question de trois façons : intonation, « est-ce que », inversion." }],
+  ["fr_quest", "transf", "Tu as faim.", ["As-tu faim ?"], { c: "synt", s: 0, i: "Posez la question avec l'inversion." }],
+  ["fr_quest", "corr", "Où est-ce que tu habites et comment tu t'appelles ?", ["Où est-ce que tu habites et comment tu t'appelles ?"], { c: "synt", s: [1, 0] }],
+  ["fr_quest", "corr", "Qu'est-ce que tu veux ? Quoi tu cherches ?", ["Qu'est-ce que tu veux ? Qu'est-ce que tu cherches ?", "Qu'est-ce que tu veux ? Tu cherches quoi ?"], { c: "synt", s: 2 }],
+  ["fr_quest", "trad", "Por que você (tu) não veio e o que aconteceu?", ["Pourquoi tu n'es pas venu et qu'est-ce qui s'est passé ?", "Pourquoi n'es-tu pas venu et que s'est-il passé ?"], { c: "synt", s: [1, 2] }],
+  ["fr_quest", "cloze", "— ___ tu pars en vacances ? — En août. — Et ___ tu y vas ? — En train. — ___ ça coûte ? — Cent euros.", ["Quand", "comment", "Combien"], { c: "synt", s: 1 }],
+  ["fr_impe", "cloze", "Ne ___ (toucher, tu) pas ! N'___ (avoir, vous) pas peur ! Ne ___ (être, tu) pas triste !", ["touche", "ayez", "sois"], { c: "conj", s: [3, 2] }],
+  ["fr_impe", "corr", "Ne mange pas trop vite et ne parles pas la bouche pleine !", ["Ne mange pas trop vite et ne parle pas la bouche pleine !"], { c: "conj", s: [3, 1] }],
+  ["fr_impe", "corr", "Sois patient et aie confiance en toi.", ["Sois patient et aie confiance en toi."], { c: "conj", s: 2 }],
+  ["fr_impe", "transf", "Vous prenez le métro et vous partez tard.", ["Ne prenez pas le métro et ne partez pas tard."], { c: "conj", s: [3, 0], i: "Mettez la phrase à l'impératif négatif (vous)." }],
+  ["fr_impe", "trad", "Sejam (vous) pontuais e tenham paciência.", ["Soyez ponctuels et ayez de la patience.", "Soyez à l'heure et ayez de la patience."], { c: "conj", s: 2 }],
+  ["fr_pronom", "cloze", "Marc et Léa ___ (s'aimer) depuis dix ans. Ils ___ (se voir) tous les jours et ils ___ (se téléphoner) le soir.", ["s'aiment", "se voient", "se téléphonent"], { c: "pron", s: 4 }],
+  ["fr_pronom", "transf", "Tu te lèves.", ["Lève-toi ! Ne te lève pas !"], { c: "pron", s: 3, i: "Mettez la phrase à l'impératif (tu), puis à l'impératif négatif." }],
+  ["fr_pronom", "corr", "Nous allons nous marier en juin et nous voulons nous installer à Lyon.", ["Nous allons nous marier en juin et nous voulons nous installer à Lyon."], { c: "pron", s: 2 }],
+  ["fr_pronom", "corr", "Assieds-te ici et ne te inquiète pas.", ["Assieds-toi ici et ne t'inquiète pas."], { c: "pron", s: 3 }],
+  ["fr_pronom", "trad", "Eu preciso me apressar.", ["Je dois me dépêcher.", "Il faut que je me dépêche."], { c: "pron", s: 2 }],
+  ["fr_plur", "cloze", "Les ___ (bijou) de ma grand-mère et les ___ (jeu) des enfants sont dans les ___ (bureau).", ["bijoux", "jeux", "bureaux"], { c: "ortho", s: 0 }],
+  ["fr_plur", "cloze", "Il y a deux ___ (animal) dans la cour et trois ___ (festival) cet été.", ["animaux", "festivals"], { c: "ortho", s: 0 }],
+  ["fr_plur", "corr", "J'ai acheté des cadeaus pour les enfants.", ["J'ai acheté des cadeaux pour les enfants."], { c: "ortho", s: 0 }],
+  ["fr_plur", "corr", "Les nouveaux élèves sont dans les bureaux du directeur.", ["Les nouveaux élèves sont dans les bureaux du directeur."], { c: "ortho", s: 0 }],
+  ["fr_plur", "corr", "Le problème, c'est la méthode.", ["Le problème, c'est la méthode."], { c: "genre", s: 1 }],
+  ["fr_plur", "corr", "Il a un grande maison et une beau jardin.", ["Il a une grande maison et un beau jardin."], { c: "genre", s: 1 }],
+  ["fr_plur", "transf", "Le cheval est dans le pré et l'oiseau chante.", ["Les chevaux sont dans le pré et les oiseaux chantent."], { c: "ortho", s: 0, i: "Mettez la phrase au pluriel." }],
+  ["fr_plur", "trad", "Os jornais falam dos novos hospitais.", ["Les journaux parlent des nouveaux hôpitaux."], { c: "ortho", s: 0 }],
+  ["fr_cest", "cloze", "— Qui est-ce ? — ___ ma voisine. ___ infirmière et ___ très gentille.", ["C'est", "Elle est", "elle est"], { c: "synt", s: 0 }],
+  ["fr_cest", "cloze", "Le français ? ___ difficile, mais ___ beau !", ["C'est", "c'est"], { c: "synt", s: 1 }],
+  ["fr_cest", "corr", "C'est très intelligent, ton frère ! Il est un génie.", ["Il est très intelligent, ton frère ! C'est un génie."], { c: "synt", s: 0 }],
+  ["fr_cest", "corr", "Il y a beaucoup de monde et c'est très bruyant.", ["Il y a beaucoup de monde et c'est très bruyant."], { c: "synt", s: [2, 1] }],
+  ["fr_cest", "corr", "Voyager seul, il est difficile.", ["Voyager seul, c'est difficile."], { c: "synt", s: 1 }],
+  ["fr_cest", "trad", "Tem um homem na porta. É o carteiro.", ["Il y a un homme à la porte. C'est le facteur."], { c: "synt", s: [2, 0] }],
+  ["fr_quique", "cloze", "L'ami ___ arrive ce soir est Marc ; l'ami ___ on attend est Paul ; la fille ___ habite ici est Léa.", ["qui", "qu'", "qui"], { c: "pron", s: [2, 1] }],
+  ["fr_quique", "corr", "C'est un livre qu'est très connu.", ["C'est un livre qui est très connu."], { c: "pron", s: 2 }],
+  ["fr_quique", "corr", "La femme qu'habite en face est médecin.", ["La femme qui habite en face est médecin."], { c: "pron", s: [2, 0] }],
+  ["fr_quique", "transf", "J'ai acheté un livre. Tu m'as conseillé ce livre.", ["J'ai acheté le livre que tu m'as conseillé."], { c: "pron", s: 1, i: "Faites une seule phrase avec « que »." }],
+  ["fr_quique", "transf", "Je connais une femme. Elle parle huit langues.", ["Je connais une femme qui parle huit langues."], { c: "pron", s: 0, i: "Faites une seule phrase avec « qui »." }],
+  ["fr_quique", "trad", "O filme que eu vi ontem fala de um homem que perdeu tudo.", ["Le film que j'ai vu hier parle d'un homme qui a tout perdu."], { c: "pron", s: [0, 1] }],
+  ["fr_adv", "cloze", "Ce restaurant est ___ (bon / bien) : on y mange très ___ (bon / bien). Mais hier, le dessert était ___ (mauvais / mal).", ["bon", "bien", "mauvais"], { c: "ptlex", s: 0 }],
+  ["fr_adv", "cloze", "Il parle ___ (doux), il conduit ___ (prudent) et il travaille ___ (sérieux).", ["doucement", "prudemment", "sérieusement"], { c: "ortho", s: 2 }],
+  ["fr_adv", "cloze", "Elle répond ___ (vrai) ___ (rapide) et ___ (gentil).", ["vraiment", "rapidement", "gentiment"], { c: "ortho", s: 2 }],
+  ["fr_adv", "corr", "Elle chante bon et elle danse mal.", ["Elle chante bien et elle danse mal."], { c: "ptlex", s: 0 }],
+  ["fr_adv", "corr", "Il fait beaucoup chaud aujourd'hui.", ["Il fait très chaud aujourd'hui."], { c: "ptlex", s: 1 }],
+  ["fr_adv", "corr", "J'ai très faim et je suis beaucoup fatigué.", ["J'ai très faim et je suis très fatigué."], { c: "ptlex", s: 1 }],
+  ["fr_adv", "trad", "Eu gosto muito desse livro: ele é muito bom.", ["J'aime beaucoup ce livre : il est très bon."], { c: "ptlex", s: [1, 0] }],
+  ["fr_adv", "transf", "Il est calme quand il parle et il est clair quand il explique.", ["Il parle calmement et il explique clairement."], { c: "ortho", s: 2, i: "Utilisez deux adverbes en -ment." }],
+  ["fr_venirde", "cloze", "Nous ___ (venir) de rentrer. Les enfants ___ (venir) de se coucher et toi, tu ___ (venir) d'appeler !", ["venons", "viennent", "viens"], { c: "conj", s: 0 }],
+  ["fr_venirde", "corr", "Il vient d'acheter une voiture et il vient de la vendu.", ["Il vient d'acheter une voiture et il vient de la vendre."], { c: "conj", s: 0 }],
+  ["fr_venirde", "corr", "Je suis venu de manger, je n'ai pas faim.", ["Je viens de manger, je n'ai pas faim."], { c: "temps", s: 1 }],
+  ["fr_venirde", "corr", "Il vient de partir il y a deux heures.", ["Il est parti il y a deux heures."], { c: "temps", s: 1 }],
+  ["fr_venirde", "transf", "Elles sont arrivées il y a une minute.", ["Elles viennent d'arriver."], { c: "temps", s: 1, i: "Utilisez « venir de »." }],
+  ["fr_venirde", "trad", "O filme acabou de começar.", ["Le film vient de commencer."], { c: "ptstr", s: 0 }],
+  ["fr_venirde", "trad", "Vocês (vous) acabaram de chegar?", ["Vous venez d'arriver ?"], { c: "ptstr", s: 0 }],
+  ["fr_venirde", "cloze", "Le train ___ (venir de / aller) partir : il n'est plus là. Le prochain ___ (venir de / aller) arriver dans dix minutes.", ["vient de", "va"], { c: "temps", s: 1 }],
+  ["fr_tout", "cloze", "J'ai lu ___ ses livres et ___ ses lettres. ___ le monde le connaît.", ["tous", "toutes", "Tout"], { c: "accadj", s: 0 }],
+  ["fr_tout", "cloze", "Il pleut ___ la journée et ___ les jours depuis une semaine.", ["toute", "tous"], { c: "accadj", s: 1 }],
+  ["fr_tout", "corr", "Toutes les étudiants sont là et tous le monde est content.", ["Tous les étudiants sont là et tout le monde est content."], { c: "accadj", s: 0 }],
+  ["fr_tout", "corr", "Je travaille toute la semaine et je me repose tous les dimanches.", ["Je travaille toute la semaine et je me repose tous les dimanches."], { c: "accadj", s: 1 }],
+  ["fr_tout", "trad", "Eu estudo todas as noites, a noite toda.", ["J'étudie tous les soirs, toute la soirée.", "J'étudie toutes les nuits, toute la nuit."], { c: "accadj", s: 1 }],
+  ["fr_tout", "trad", "Ela comeu o bolo todo e todas as frutas.", ["Elle a mangé tout le gâteau et tous les fruits."], { c: "accadj", s: 0 }],
+  ["fr_toniq", "cloze", "Tu viens avec ___ (je) ? Ce cadeau est pour ___ (tu). On dîne chez ___ (ils) ce soir.", ["moi", "toi", "eux"], { c: "pron", s: 1 }],
+  ["fr_toniq", "cloze", "___, je suis brésilien ; ___, elle est française ; et ___, vous êtes d'où ?", ["Moi", "Elle", "vous"], { c: "pron", s: 2 }],
+  ["fr_toniq", "cloze", "Paul est plus grand que ___ (je), mais je cours plus vite que ___ (il). Mes sœurs ? Je pense souvent à ___ .", ["moi", "lui", "elles"], { c: "pron", s: 0 }],
+  ["fr_toniq", "corr", "Je vais chez lui et après je rentre chez je.", ["Je vais chez lui et après je rentre chez moi."], { c: "pron", s: 1 }],
+  ["fr_toniq", "corr", "Nous, on va au cinéma ; vous venez avec nous ?", ["Nous, on va au cinéma ; vous venez avec nous ?"], { c: "pron", s: [3, 2] }],
+  ["fr_toniq", "corr", "Ce livre est pour ils, pas pour vous.", ["Ce livre est pour eux, pas pour vous."], { c: "pron", s: [0, 1] }],
+  ["fr_toniq", "trad", "Eu não gosto de café, mas ele adora.", ["Moi, je n'aime pas le café, mais lui, il adore ça.", "Je n'aime pas le café, mais lui adore ça."], { c: "pron", s: [2, 0] }],
+  ["fr_toniq", "trad", "A gente foi à praia e a gente nadou.", ["On est allés à la plage et on a nagé.", "On est allé à la plage et on a nagé."], { c: "pron", s: 3 }],
+  ["fr_indef", "cloze", "___ semaine, j'achète ___ livres : deux ou trois. ___ personnes lisent encore beaucoup.", ["Chaque", "quelques|plusieurs", "Plusieurs|Quelques|Certaines"], { c: "synt", s: 1 }],
+  ["fr_indef", "cloze", "— Tu as entendu ___ ? — Non, rien. — ___ a frappé à la porte, je crois.", ["quelque chose", "Quelqu'un"], { c: "synt", s: 0 }],
+  ["fr_indef", "cloze", "Il n'y a ___ dans la rue et je n'entends ___ .", ["personne", "rien"], { c: "synt", s: 2 }],
+  ["fr_indef", "corr", "Chaques étudiants ont un livre.", ["Chaque étudiant a un livre."], { c: "accadj", s: 1 }],
+  ["fr_indef", "corr", "J'ai quelque chose à te dire : quelqu'un t'aime !", ["J'ai quelque chose à te dire : quelqu'un t'aime !"], { c: "synt", s: 0 }],
+  ["fr_indef", "corr", "J'ai plusieur amis à Lyon et quelque amis à Paris.", ["J'ai plusieurs amis à Lyon et quelques amis à Paris."], { c: "accadj", s: 1 }],
+  ["fr_indef", "trad", "Cada dia eu aprendo algumas palavras.", ["Chaque jour, j'apprends quelques mots."], { c: "synt", s: 1 }],
+  ["fr_indef", "transf", "Tu cherches quelque chose ? Tu attends quelqu'un ?", ["Non, je ne cherche rien. Je n'attends personne."], { c: "synt", s: [2, 0], i: "Répondez négativement aux deux questions." }],
+  ["fr_yen1", "cloze", "Le marché ? J'___ suis allé hier. Du fromage ? Je n'___ ai pas trouvé. Je vais ___ retourner demain.", ["y", "en", "y"], { c: "pron", s: 2 }],
+  ["fr_yen1", "corr", "Des pommes ? J'ai en acheté trois.", ["Des pommes ? J'en ai acheté trois."], { c: "pron", s: 2 }],
+  ["fr_yen1", "corr", "À Paris ? Je vais y aller en juin.", ["À Paris ? Je vais y aller en juin."], { c: "pron", s: 2 }],
+  ["fr_yen1", "corr", "Du pain ? Je ne veux en pas.", ["Du pain ? Je n'en veux pas."], { c: "pron", s: 2 }],
+  ["fr_yen1", "transf", "Tu as des enfants ?", ["Non, je n'en ai pas."], { c: "pron", s: [2, 1], i: "Répondez négativement avec « en »." }],
+  ["fr_yen1", "transf", "Tu es allé en Italie ?", ["Oui, j'y suis allé.", "Oui, j'y suis allée."], { c: "pron", s: [2, 0], i: "Répondez « oui » avec « y » au passé composé." }],
+  ["fr_yen1", "trad", "Quantos irmãos você (tu) tem? — Tenho três.", ["Combien de frères tu as ? — J'en ai trois.", "Combien de frères as-tu ? — J'en ai trois."], { c: "pron", s: 1 }],
+  ["fr_yen1", "trad", "Eu moro em Lyon há dois anos e gosto de morar lá.", ["J'habite à Lyon depuis deux ans et j'aime y habiter.", "J'habite à Lyon depuis deux ans et j'aime y vivre."], { c: "pron", s: [0, 2] }],
+  ["fr_pcimp1", "cloze", "Quand j'étais étudiant, je ___ (travailler) le soir. Un jour, j'___ (rencontrer) ma femme dans ce café.", ["travaillais", "ai rencontré"], { c: "temps", s: 0 }],
+  ["fr_pcimp1", "cloze", "Nous ___ (dîner) quand l'électricité ___ (s'arrêter). Il ___ (faire) noir et nous ___ (allumer) des bougies.", ["dînions", "s'est arrêtée", "faisait", "avons allumé"], { c: "temps", s: [1, 2] }],
+  ["fr_pcimp1", "cloze", "L'année dernière, je ___ (aller) trois fois à Paris. Avant, j'y ___ (aller) tous les étés.", ["suis allé|suis allée", "allais"], { c: "temps", s: 0 }],
+  ["fr_pcimp1", "corr", "Il faisait beau, le ciel était bleu et nous avons décidé de partir.", ["Il faisait beau, le ciel était bleu et nous avons décidé de partir."], { c: "temps", s: 1 }],
+  ["fr_pcimp1", "corr", "Hier, je regardais un film et après je me couchais.", ["Hier, j'ai regardé un film et après je me suis couché.", "Hier, j'ai regardé un film et après je me suis couchée."], { c: "temps", s: 0 }],
+  ["fr_pcimp1", "corr", "Quand je suis arrivé, il a plu.", ["Quand je suis arrivé, il pleuvait."], { c: "temps", s: 2 }],
+  ["fr_pcimp1", "trad", "A casa era velha e não tinha luz, mas nós compramos ela mesmo assim.", ["La maison était vieille et elle n'avait pas d'électricité, mais nous l'avons achetée quand même."], { c: "temps", s: 1 }],
+  ["fr_pcimp1", "transf", "Je lis quand mon frère arrive.", ["Je lisais quand mon frère est arrivé."], { c: "temps", s: [1, 2], i: "Racontez au passé." }],
+  ["fr_impron", "cloze", "Ce livre ? Prends-___ ! Tes amis ? Invite-___ ! Ta mère ? Écris-___ !", ["le", "les", "lui"], { c: "pron", s: 0 }],
+  ["fr_impron", "cloze", "Ce livre ? Ne ___ prends pas ! Tes amis ? Ne ___ invite pas ! Ta mère ? Ne ___ écris pas !", ["le", "les", "lui"], { c: "pron", s: 1 }],
+  ["fr_impron", "cloze", "Aide-___ (je), s'il te plaît ! Ne ___ (je) laisse pas seul ! Regarde-___ (tu) dans le miroir !", ["moi", "me", "toi"], { c: "pron", s: 2 }],
+  ["fr_impron", "corr", "Téléphone-lui et dis lui la vérité.", ["Téléphone-lui et dis-lui la vérité."], { c: "ortho", s: 0 }],
+  ["fr_impron", "corr", "Ne la oublie pas !", ["Ne l'oublie pas !"], { c: "pron", s: 1 }],
+  ["fr_impron", "corr", "Ne me regarde pas comme ça et écoute-moi.", ["Ne me regarde pas comme ça et écoute-moi."], { c: "pron", s: 2 }],
+  ["fr_impron", "transf", "Tu dois appeler Marie.", ["Appelle-la !"], { c: "pron", s: 0, i: "Mettez à l'impératif affirmatif (tu) avec un pronom." }],
+  ["fr_impron", "transf", "Vous ne devez pas parler à ce monsieur.", ["Ne lui parlez pas !"], { c: "pron", s: 1, i: "Mettez à l'impératif négatif (vous) avec un pronom." }],
+  ["fr_modal", "cloze", "— Tu ___ (pouvoir) venir ? — Non, je ___ (devoir) travailler, mais mes amis ___ (vouloir) bien venir.", ["peux", "dois", "veulent"], { c: "conj", s: 1 }],
+  ["fr_modal", "cloze", "Pour réussir, il ___ (falloir, présent) travailler. Hier, il ___ (falloir, passé composé) partir tôt.", ["faut", "a fallu"], { c: "conj", s: 0 }],
+  ["fr_modal", "corr", "Je veux de partir et je dois de travailler.", ["Je veux partir et je dois travailler."], { c: "prep", s: 2 }],
+  ["fr_modal", "corr", "On ne peut pas fumer ici et il faut éteindre les téléphones.", ["On ne peut pas fumer ici et il faut éteindre les téléphones."], { c: "prep", s: [2, 0] }],
+  ["fr_modal", "corr", "Ils pouvent venir, mais ils doivent partir tôt.", ["Ils peuvent venir, mais ils doivent partir tôt."], { c: "conj", s: 1 }],
+  ["fr_modal", "trad", "Você (tu) quer ir ao cinema? Eu posso pagar.", ["Tu veux aller au cinéma ? Je peux payer."], { c: "conj", s: [1, 2] }],
+  ["fr_modal", "trad", "É preciso falar mais devagar.", ["Il faut parler plus lentement."], { c: "ptstr", s: 0 }],
+  ["fr_modal", "transf", "Je veux partir, je peux attendre et je dois rester calme.", ["Nous voulons partir, nous pouvons attendre et nous devons rester calmes."], { c: "conj", s: 1, i: "Mettez la phrase à la forme « nous »." }],
+  ["fr_condpol", "cloze", "Demain, je ___ (vouloir, futur) partir tôt. Mais maintenant, je ___ (vouloir, conditionnel) un café.", ["voudrai", "voudrais"], { c: "conj", s: 2 }],
+  ["fr_condpol", "cloze", "Nous ___ (aimer) réserver une table. Vous ___ (pouvoir) nous rappeler ? Et toi, tu ___ (pouvoir) m'aider ?", ["aimerions", "pourriez", "pourrais"], { c: "conj", s: [0, 1] }],
+  ["fr_condpol", "corr", "J'aimerai bien un thé, s'il vous plaît.", ["J'aimerais bien un thé, s'il vous plaît."], { c: "conj", s: 2 }],
+  ["fr_condpol", "corr", "Est-ce que tu pourrais me prêter ton livre ?", ["Est-ce que tu pourrais me prêter ton livre ?"], { c: "conj", s: 1 }],
+  ["fr_condpol", "corr", "Je voudrais que réserver une chambre.", ["Je voudrais réserver une chambre."], { c: "synt", s: 0 }],
+  ["fr_condpol", "trad", "Nós gostaríamos de visitar o museu.", ["Nous aimerions visiter le musée.", "Nous voudrions visiter le musée."], { c: "conj", s: 0 }],
+  ["fr_condpol", "trad", "Você (tu) poderia fechar a porta?", ["Tu pourrais fermer la porte ?"], { c: "conj", s: 1 }],
+  ["fr_condpol", "transf", "Donnez-moi un verre d'eau !", ["Pourriez-vous me donner un verre d'eau, s'il vous plaît ?", "Je voudrais un verre d'eau, s'il vous plaît."], { c: "reg", s: [0, 1], i: "Rendez la demande polie avec le conditionnel." }],
+  ["fr_verbprep", "cloze", "J'apprends ___ nager, mais j'oublie toujours ___ respirer ! Mon prof continue ___ m'aider.", ["à", "de", "à"], { c: "prep", s: [0, 1] }],
+  ["fr_verbprep", "cloze", "Elle a décidé ___ partir et elle a refusé ___ rester. Elle a fini ___ ranger ses affaires.", ["de", "de", "de"], { c: "prep", s: 1 }],
+  ["fr_verbprep", "cloze", "Chut ! Le bébé est ___ dormir et moi, je suis ___ lire.", ["en train de", "en train de"], { c: "temps", s: 2 }],
+  ["fr_verbprep", "corr", "Il a commencé de pleuvoir quand j'ai appris conduire.", ["Il a commencé à pleuvoir quand j'ai appris à conduire."], { c: "prep", s: 0 }],
+  ["fr_verbprep", "corr", "J'essaie à comprendre, mais j'ai oublié de lire le texte.", ["J'essaie de comprendre, mais j'ai oublié de lire le texte."], { c: "prep", s: 1 }],
+  ["fr_verbprep", "corr", "Je suis en train d'écrire un mail, je te rappelle.", ["Je suis en train d'écrire un mail, je te rappelle."], { c: "temps", s: 2 }],
+  ["fr_verbprep", "trad", "Eu esqueci de te ligar e decidi te escrever.", ["J'ai oublié de t'appeler et j'ai décidé de t'écrire."], { c: "prep", s: 1 }],
+  ["fr_verbprep", "transf", "Je dormais quand tu as appelé.", ["J'étais en train de dormir quand tu as appelé."], { c: "temps", s: 2, i: "Utilisez « être en train de » à l'imparfait." }],
+  ["fr_conect", "cloze", "___, je me lève à sept heures. ___, je prends une douche. ___, je pars au travail.", ["D'abord", "Ensuite|Puis|Après", "Enfin|Ensuite|Puis|Après"], { c: "synt", s: 3 }],
+  ["fr_conect", "corr", "Primero, je lis le texte ; après, je réponds aux questions.", ["D'abord, je lis le texte ; ensuite, je réponds aux questions.", "D'abord, je lis le texte ; après, je réponds aux questions."], { c: "ptlex", s: 3 }],
+  ["fr_conect", "cloze", "___ il pleuvait, je suis resté à la maison. Je suis resté aussi ___ j'étais malade.", ["Comme", "parce que"], { c: "synt", s: 1 }],
+  ["fr_conect", "corr", "Parce qu'il pleuvait, je suis resté chez moi.", ["Comme il pleuvait, je suis resté chez moi."], { c: "synt", s: 1 }],
+  ["fr_conect", "corr", "Il est tard, alors je rentre, mais je reviens demain.", ["Il est tard, alors je rentre, mais je reviens demain."], { c: "synt", s: 0 }],
+  ["fr_conect", "trad", "Quando cheguei, ela estava dormindo, então eu saí.", ["Quand je suis arrivé, elle dormait, alors je suis sorti.", "Quand je suis arrivé, elle dormait, donc je suis reparti."], { c: "synt", s: [2, 0] }],
+  ["fr_conect", "trad", "Primeiro eu estudo, depois eu trabalho e por fim descanso.", ["D'abord j'étudie, ensuite je travaille et enfin je me repose."], { c: "synt", s: 3 }],
+  ["fr_partitif", "corr", "Ce n'est pas de vin, c'est du jus de raisin.", ["Ce n'est pas du vin, c'est du jus de raisin."], { c: "art", s: 2 }],
+  ["fr_partitif", "cloze", "Je préfère ___ thé, mais ce matin j'ai bu ___ café. Ma sœur adore ___ croissants.", ["le", "du", "les"], { c: "art", s: 4 }],
+  ["fr_partitif", "trad", "Eu não gosto de peixe, então não como peixe.", ["Je n'aime pas le poisson, donc je ne mange pas de poisson."], { c: "art", s: [4, 1] }],
+  ["fr_artdef", "corr", "J'ai vu un film hier. Un film était très drôle.", ["J'ai vu un film hier. Le film était très drôle."], { c: "art", s: 0 }],
+  ["fr_artdef", "corr", "Il joue du football et elle joue au violon.", ["Il joue au football et elle joue du violon."], { c: "art", s: 6 }],
+  ["fr_artdef", "cloze", "Il y a ___ boulangerie dans ma rue. ___ boulangerie est ouverte le dimanche.", ["une", "La"], { c: "art", s: 0 }],
+  ["fr_cplace", "cloze", "Les photos ? Je ___ ai mises sur le site. Ton père ? Je ___ ai parlé hier.", ["les", "lui"], { c: "pron", s: 0 }],
+  ["fr_cplace", "corr", "J'ai lui donné le livre.", ["Je lui ai donné le livre."], { c: "synt", s: 0 }],
+  ["fr_cplace", "transf", "J'ai mangé le gâteau.", ["Je l'ai mangé."], { c: "pron", s: 0, i: "Remplacez « le gâteau » par un pronom." }],
+  ["fr_cplace", "trad", "Eu vi ele, mas não falei com ele.", ["Je l'ai vu, mais je ne lui ai pas parlé."], { c: "pron", s: [0, 1] }],
+  ["fr_ppirr", "cloze", "Il a ___ (découvrir) un secret et il a ___ (souffrir) beaucoup.", ["découvert", "souffert"], { c: "conj", s: 2 }],
+  ["fr_ppirr", "corr", "Mes amies sont arrivé hier et elles sont reparties ce matin.", ["Mes amies sont arrivées hier et elles sont reparties ce matin."], { c: "accpp", s: 4 }],
+  ["fr_ppirr", "cloze", "Ma mère ___ (naître) en 1970. Mes grands-parents ___ (mourir) en 2010.", ["est née", "sont morts"], { c: "accpp", s: [3, 4] }],
+  ["fr_negpc", "transf", "J'ai compris et je suis venu.", ["Je n'ai pas compris et je ne suis pas venu."], { c: "synt", s: 0, i: "Mettez les deux verbes à la forme négative." }],
+  ["fr_negpc", "corr", "Je ne ai pas fini mon travail.", ["Je n'ai pas fini mon travail."], { c: "ortho", s: 0 }],
+  ["fr_negpc", "corr", "Il n'a pas venu hier.", ["Il n'est pas venu hier."], { c: "conj", s: 0 }],
+  ["fr_negpc", "corr", "Elle n'est jamais allée en Espagne et elle n'a pas encore pris l'avion.", ["Elle n'est jamais allée en Espagne et elle n'a pas encore pris l'avion."], { c: "synt", s: [0, 2] }],
+  ["fr_negpc", "trad", "Eu não entendi e não respondi.", ["Je n'ai pas compris et je n'ai pas répondu."], { c: "synt", s: 0 }],
+  ["fr_savconn", "cloze", "— Tu ___ (savoir) cuisiner ? — Non, mais je ___ (connaître) un bon restaurant. Vous ___ (savoir) à quelle heure il ouvre ?", ["sais", "connais", "savez"], { c: "ptlex", s: 0 }],
+  ["fr_savconn", "corr", "Tu sais Marie ? Elle sait très bien Londres.", ["Tu connais Marie ? Elle connaît très bien Londres.", "Tu connais Marie ? Elle connait très bien Londres."], { c: "ptlex", s: 1 }],
+  ["fr_savconn", "trad", "Eu não sei dirigir, mas conheço bem a cidade.", ["Je ne sais pas conduire, mais je connais bien la ville."], { c: "ptlex", s: [0, 1] }],
+  ["fr_nombres", "cloze", "Elle a ___ (72) ans et lui ___ (97) ans.", ["soixante-douze", "quatre-vingt-dix-sept"], { c: "ortho", s: 0, i: "Écrivez les nombres en lettres." }],
+  ["fr_nombres", "cloze", "Ce vélo coûte ___ (300) euros et la voiture ___ (2 000) euros.", ["trois cents", "deux mille"], { c: "ortho", s: 1, i: "Écrivez les nombres en lettres." }],
+  ["fr_nombres", "corr", "Il y a deux cents cinquante personnes et trois milles euros.", ["Il y a deux cent cinquante personnes et trois mille euros."], { c: "ortho", s: 1 }],
+  ["fr_nombres", "corr", "Le film commence à neuf heures et demie et finit à onze heures et quart.", ["Le film commence à neuf heures et demie et finit à onze heures et quart."], { c: "ortho", s: 2 }],
+  ["fr_nombres", "corr", "Il est une heure et demi : on mange ?", ["Il est une heure et demie : on mange ?"], { c: "ortho", s: 2 }],
+  ["fr_nombres", "trad", "O trem sai ao meio-dia e chega às duas e meia.", ["Le train part à midi et arrive à deux heures et demie.", "Le train part à midi et arrive à quatorze heures trente."], { c: "ortho", s: 2 }],
+  ["fr_nombres", "trad", "Hoje é sábado, 21 de junho.", ["Aujourd'hui, c'est samedi 21 juin.", "Nous sommes le samedi 21 juin."], { c: "ortho", s: 3 }],
+  ["fr_prept", "cloze", "Je pars en Italie ___ deux semaines. J'ai réservé l'hôtel ___ dix nuits.", ["pour", "pour"], { c: "prep", s: 5 }],
+  ["fr_prept", "corr", "Il est parti à Londres pendant six mois : il revient en juin.", ["Il est parti à Londres pour six mois : il revient en juin."], { c: "prep", s: 5 }],
+  ["fr_prept", "corr", "J'ai écrit ce rapport dans une heure.", ["J'ai écrit ce rapport en une heure."], { c: "prep", s: 4 }],
+  ["fr_prept", "trad", "Eu conheço ele desde 2018; nós nos conhecemos há sete anos.", ["Je le connais depuis 2018 ; on s'est rencontrés il y a sept ans.", "Je le connais depuis 2018 ; nous nous sommes rencontrés il y a sept ans."], { c: "prep", s: [1, 0] }],
+  ["fr_geo", "cloze", "Ce vin vient ___ France, ces fruits viennent ___ Maroc et ce thé vient ___ Inde.", ["de", "du", "d'"], { c: "prep", s: 2 }],
+  ["fr_geo", "corr", "Je viens de le Brésil et lui vient de les Pays-Bas.", ["Je viens du Brésil et lui vient des Pays-Bas."], { c: "prep", s: 2 }],
+  ["fr_geo", "corr", "Je vais au bureau en pied et je rentre en vélo.", ["Je vais au bureau à pied et je rentre à vélo.", "Je vais au bureau à pied et je rentre en vélo."], { c: "prep", s: 4 }],
+  ["fr_geo", "trad", "Eu passei uma semana em Roma, na Itália, e depois fui para os Estados Unidos.", ["J'ai passé une semaine à Rome, en Italie, puis je suis allé aux États-Unis."], { c: "prep", s: [0, 1] }],
+  ["fr_quel", "corr", "Quoi est-ce que tu veux ?", ["Qu'est-ce que tu veux ?", "Que veux-tu ?"], { c: "synt", s: 3 }],
+  ["fr_quel", "cloze", "___ est-ce que tu fais dans la vie ? Et ce soir, ___ fais-tu ?", ["Qu'", "que"], { c: "synt", s: 3 }],
+  ["fr_quel", "cloze", "___ sont tes films préférés ? ___ musique tu écoutes ? À ___ moment tu travailles ?", ["Quels", "Quelle", "quel"], { c: "accadj", s: 0 }],
+  ["fr_quel", "transf", "Ils ont compris la leçon.", ["Ont-ils compris la leçon ?"], { c: "synt", s: 1, i: "Posez la question avec l'inversion." }],
+  ["fr_genre", "cloze", "Regarde ___ (ce / cet / cette) arbre et ___ (ce / cet / cette) nuage ! ___ (Le / La) personnage principal du film est un enfant.", ["cet", "ce", "Le"], { c: "genre", s: 2 }],
+  ["fr_genre", "corr", "Le pourcentage est petit, mais la personnage est importante.", ["Le pourcentage est petit, mais le personnage est important."], { c: "genre", s: 2 }],
+  ["fr_genre", "corr", "Il y a une grande arbre et un gros nuage.", ["Il y a un grand arbre et un gros nuage."], { c: "genre", s: 2 }],
+  ["fr_genre", "trad", "A mensagem da personagem é clara.", ["Le message du personnage est clair."], { c: "genre", s: [0, 2] }],
+  ["fr_genre", "trad", "O fim do mês é difícil e a equipe está cansada.", ["La fin du mois est difficile et l'équipe est fatiguée."], { c: "genre", s: 1 }],
+  ["fr_fut", "cloze", "Demain, je ___ (travailler) chez moi, nous ___ (finir) le projet et ils ___ (prendre) le train.", ["travaillerai", "finirons", "prendront"], { c: "conj", s: 0 }],
+  ["fr_fut", "corr", "Je parlerai avec lui et nous déciderons ensemble.", ["Je parlerai avec lui et nous déciderons ensemble."], { c: "conj", s: 0 }],
+  ["fr_fut", "corr", "Quand tu arrives à la gare, tu m'appelleras.", ["Quand tu arriveras à la gare, tu m'appelleras."], { c: "temps", s: 2 }],
+  ["fr_fut", "trad", "Quando eu tiver tempo, eu vou te visitar.", ["Quand j'aurai le temps, je viendrai te voir.", "Quand j'aurai le temps, je te rendrai visite."], { c: "temps", s: 2 }],
+  ["fr_constr", "corr", "Je me souviens de mon premier jour et j'ai peur l'examen.", ["Je me souviens de mon premier jour et j'ai peur de l'examen."], { c: "prep", s: 3 }],
+  ["fr_constr", "cloze", "— Tu penses ___ tes parents ? — Oui, je pense ___ eux tous les jours, et je ___ téléphone le dimanche.", ["à", "à", "leur"], { c: "pron", s: [4, 2] }],
+  ["fr_preg", "corr", "Nous achetons du pain et ils appèlent un taxi.", ["Nous achetons du pain et ils appellent un taxi."], { c: "conj", s: 2 }],
+  ["fr_adj", "corr", "C'est un vieux homme avec un beau appartement.", ["C'est un vieil homme avec un bel appartement."], { c: "accadj", s: 2 }],
+  ["fr_pronom", "corr", "Mes parents s'écrivent des lettres et ils se aiment beaucoup.", ["Mes parents s'écrivent des lettres et ils s'aiment beaucoup."], { c: "pron", s: 4 }],
+  ["fr_partitif", "cloze", "Attention, ce n'est pas ___ sucre, c'est ___ sel !", ["du", "du"], { c: "art", s: 2 }],
+  ["fr_artdef", "corr", "J'apprends le français et j'aime beaucoup France.", ["J'apprends le français et j'aime beaucoup la France."], { c: "art", s: 4 }],
+  ["fr_artdef", "trad", "Estou com fome e com sede.", ["J'ai faim et j'ai soif."], { c: "ptstr", s: 5 }],
+  ["fr_artdef", "cloze", "Il fait ___ ski en hiver et il joue ___ piano le soir.", ["du", "du"], { c: "art", s: 6 }],
+  ["fr_ppirr", "corr", "Il a ouvri la porte et il a offri un café.", ["Il a ouvert la porte et il a offert un café."], { c: "conj", s: 2 }],
+  ["fr_negpc", "cloze", "— J'aime le jazz. — Moi ___ . — Je ne fume pas. — Moi non ___ .", ["aussi", "plus"], { c: "synt", s: 4 }],
+  ["fr_artdef", "trad", "Comprei um carro. O carro é vermelho.", ["J'ai acheté une voiture. La voiture est rouge."], { c: "art", s: 0 }],
 ];
 
 // Banco inicial A2 — espanhol (norma de Madri). [tema, tipo, enunciado, respostas, extra]
@@ -1768,6 +2105,254 @@ const SEED_ES = [
   ["es_acen", "corr", "Fuí al médico y él me dió una receta.", ["Fui al médico y él me dio una receta."], { c: "acen" }],
   ["es_acen", "corr", "¿Que quieres tomar? ¿Un té o un café?", ["¿Qué quieres tomar? ¿Un té o un café?"], { c: "acen" }],
   ["es_acen", "corr", "Si, mi hermano tambien viene.", ["Sí, mi hermano también viene."], { c: "acen" }],
+  // ===== Banco A2 completado (≈16 por tema, ≥3 por subpunto) =====
+  ["es_pres", "cloze", "Yo ___ (ser) de Brasil, ___ (estar) en Madrid y ___ (ir) a clase todos los días.", ["soy", "estoy", "voy"], { c: "conj", s: 2 }],
+  ["es_pres", "cloze", "Mis padres ___ (ir) al cine y nosotros ___ (ir) al teatro. ¿Vosotros ___ (ir) con nosotros?", ["van", "vamos", "vais"], { c: "conj", s: 2 }],
+  ["es_pres", "corr", "Yo estoi cansado y voi a casa.", ["Yo estoy cansado y voy a casa."], { c: "conj", s: 2 }],
+  ["es_pres", "corr", "Yo tengo que salir, pero vuelvo mañana.", ["Yo tengo que salir, pero vuelvo mañana."], { c: "conj", s: [0, 1] }],
+  ["es_pres", "trad", "Eu sou engenheiro, estou cansado e vou dormir.", ["Soy ingeniero, estoy cansado y me voy a dormir.", "Soy ingeniero, estoy cansado y voy a dormir."], { c: "conj", s: [1, 2] }],
+  ["es_indef", "corr", "Este año fui a Sevilla y ayer he visitado Granada.", ["Este año he ido a Sevilla y ayer visité Granada."], { c: "pasados", s: 2 }],
+  ["es_indef", "cloze", "Ayer ___ (trabajar, yo) mucho, ___ (comer) tarde y ___ (escribir) tres informes.", ["trabajé", "comí", "escribí"], { c: "pasados", s: 0 }],
+  ["es_indef", "cloze", "En 2019 mis padres ___ (vivir) en Lima y ___ (viajar) por todo Perú.", ["vivieron", "viajaron"], { c: "pasados", s: [0, 2] }],
+  ["es_indef", "corr", "Ayer comió yo en casa con mi familia.", ["Ayer comí en casa con mi familia."], { c: "pasados", s: 0 }],
+  ["es_indef", "trad", "No ano passado nós estudamos muito.", ["El año pasado estudiamos mucho."], { c: "pasados", s: [2, 0] }],
+  ["es_perf", "cloze", "—¿Qué ___ (hacer, vosotros) hoy? —___ (ir, nosotros) al museo y ___ (ver) una exposición.", ["habéis hecho", "Hemos ido", "hemos visto"], { c: "pasados", s: 0 }],
+  ["es_perf", "cloze", "Todavía no ___ (terminar, yo) el libro, pero ya ___ (leer) la mitad.", ["he terminado", "he leído"], { c: "pasados", s: 1 }],
+  ["es_perf", "corr", "Hoy hemos trabajao mucho.", ["Hoy hemos trabajado mucho."], { c: "pasados", s: 0 }],
+  ["es_perf", "corr", "El año pasado he cambiado de trabajo.", ["El año pasado cambié de trabajo."], { c: "pasados", s: 2 }],
+  ["es_perf", "corr", "¿Alguna vez has comido pulpo? —Sí, lo he probado en Galicia.", ["¿Alguna vez has comido pulpo? —Sí, lo he probado en Galicia."], { c: "pasados", s: 1 }],
+  ["es_perf", "trad", "Esta semana eu ainda não falei com ela.", ["Esta semana todavía no he hablado con ella."], { c: "pasados", s: [1, 0] }],
+  ["es_imp", "cloze", "Antes ___ (trabajar, yo) en un banco y ___ (comer) siempre en la oficina. Mis compañeros ___ (vivir) cerca.", ["trabajaba", "comía", "vivían"], { c: "pasados", s: 0 }],
+  ["es_imp", "cloze", "De niños, ___ (ir, nosotros) al pueblo y ___ (ver) a los abuelos. ___ (Ser) muy felices.", ["íbamos", "veíamos", "Éramos"], { c: "pasados", s: 1 }],
+  ["es_imp", "corr", "Cuando era pequeño, comía mucho y bebía poca agua.", ["Cuando era pequeño, comía mucho y bebía poca agua."], { c: "pasados", s: 0 }],
+  ["es_imp", "corr", "Antes yo iva al gimnasio y veia la tele todas las noches.", ["Antes yo iba al gimnasio y veía la tele todas las noches."], { c: "pasados", s: 1 }],
+  ["es_imp", "trad", "Quando eu morava em Madri, eu andava muito.", ["Cuando vivía en Madrid, caminaba mucho.", "Cuando vivía en Madrid, andaba mucho."], { c: "pasados", s: [0, 2] }],
+  ["es_perif", "cloze", "Ahora mismo mi padre está ___ (dormir), mi madre está ___ (leer) y yo estoy ___ (pedir) una pizza.", ["durmiendo", "leyendo", "pidiendo"], { c: "conj", s: 1 }],
+  ["es_perif", "cloze", "Mañana ___ (ir, yo) a trabajar en casa y mis hijos ___ (ir) a ver a su abuela.", ["voy", "van"], { c: "conj", s: 0 }],
+  ["es_perif", "corr", "Estoy escribendo un correo y estoy oyiendo música.", ["Estoy escribiendo un correo y estoy oyendo música."], { c: "conj", s: 1 }],
+  ["es_perif", "corr", "Esta noche vamos a cenar fuera y vamos a ir al cine.", ["Esta noche vamos a cenar fuera y vamos a ir al cine."], { c: "conj", s: 0 }],
+  ["es_perif", "corr", "El sábado voy ir a la playa.", ["El sábado voy a ir a la playa."], { c: "prep", s: 0 }],
+  ["es_perif", "trad", "Eles estão dormindo e eu estou trabalhando.", ["Ellos están durmiendo y yo estoy trabajando."], { c: "conj", s: 1 }],
+  ["es_perif", "transf", "Ahora leo el periódico y tomo un café.", ["Ahora estoy leyendo el periódico y estoy tomando un café.", "Ahora estoy leyendo el periódico y tomando un café."], { c: "conj", s: 1, i: "Usa «estar + gerundio»." }],
+  ["es_art", "cloze", "Tengo ___ perro y ___ gato. ___ perro se llama Max y ___ gato duerme todo el día.", ["un", "un", "El", "el"], { c: "art", s: 0 }],
+  ["es_art", "cloze", "Hay ___ farmacia en mi calle. ___ farmacia abre los domingos.", ["una", "La"], { c: "art", s: 0 }],
+  ["es_art", "corr", "Vi una película ayer. Una película era muy buena.", ["Vi una película ayer. La película era muy buena."], { c: "art", s: 0 }],
+  ["es_art", "corr", "Vengo de el mercado y voy a el gimnasio.", ["Vengo del mercado y voy al gimnasio."], { c: "art", s: 1 }],
+  ["es_art", "corr", "Los niños juegan en el parque y la madre los mira.", ["Los niños juegan en el parque y la madre los mira."], { c: "art", s: 0 }],
+  ["es_art", "trad", "Comprei um livro. O livro é ótimo.", ["Compré un libro. El libro es estupendo.", "Compré un libro. El libro es genial."], { c: "art", s: 0 }],
+  ["es_pron", "cloze", "¿Y las entradas? ___ compré ayer. ¿Y a tu hermano? ___ di una.", ["Las", "Le"], { c: "pron", s: [0, 1] }],
+  ["es_pron", "cloze", "¿El informe? ___ estoy terminando. ¿Las fotos? ___ envío ahora.", ["Lo", "Las"], { c: "pron", s: 2 }],
+  ["es_pron", "corr", "A Marta la escribí un mensaje.", ["A Marta le escribí un mensaje."], { c: "pron", s: 1 }],
+  ["es_pron", "corr", "¿Los libros? Les dejé en tu mesa.", ["¿Los libros? Los dejé en tu mesa."], { c: "pron", s: 0 }],
+  ["es_pron", "corr", "Te llamo mañana y te cuento todo.", ["Te llamo mañana y te cuento todo."], { c: "pron", s: 2 }],
+  ["es_pron", "trad", "Eu encontrei as chaves e guardei elas.", ["Encontré las llaves y las guardé."], { c: "pron", s: [0, 2] }],
+  ["es_muy", "cloze", "Hace ___ frío y hay ___ nieve, pero el paisaje es ___ bonito.", ["mucho", "mucha", "muy"], { c: "ptstr", s: [0, 1] }],
+  ["es_muy", "cloze", "Tengo ___ amigos y ___ trabajo; por eso salgo ___ poco.", ["muchos", "mucho", "muy"], { c: "ptstr", s: [1, 0] }],
+  ["es_muy", "corr", "La casa es mucho grande y muy bonita.", ["La casa es muy grande y muy bonita."], { c: "ptstr", s: 0 }],
+  ["es_muy", "corr", "Me gusta mucho leer y leo mucho.", ["Me gusta mucho leer y leo mucho."], { c: "ptstr", s: 2 }],
+  ["es_muy", "trad", "Tem muitas pessoas e está muito quente.", ["Hay mucha gente y hace mucho calor.", "Hay muchas personas y hace mucho calor."], { c: "ptstr", s: [1, 2] }],
+  ["es_a", "cloze", "Busco ___ mi perro: se llama Toby. También busco ___ alguien para cuidarlo.", ["a", "a"], { c: "prep", s: 2 }],
+  ["es_a", "corr", "No conozco nadie en esta ciudad.", ["No conozco a nadie en esta ciudad."], { c: "prep", s: 2 }],
+  ["es_a", "corr", "Tengo a un hermano y hay a un perro en casa.", ["Tengo un hermano y hay un perro en casa."], { c: "prep", s: 1 }],
+  ["es_a", "corr", "¿Has visto a alguien en la oficina? —No, no he visto a nadie.", ["¿Has visto a alguien en la oficina? —No, no he visto a nadie."], { c: "prep", s: 2 }],
+  ["es_a", "trad", "Eu ajudo meus pais e espero meu irmão.", ["Ayudo a mis padres y espero a mi hermano."], { c: "prep", s: 0 }],
+  ["es_a", "trad", "Eu procuro um apartamento e conheço um bom corretor.", ["Busco un piso y conozco a un buen agente inmobiliario.", "Busco un apartamento y conozco a un buen agente inmobiliario."], { c: "prep", s: [1, 0] }],
+  ["es_comp", "cloze", "El examen fue ___ (muy difícil → -ísimo) y la comida, ___ (muy rica → -ísima).", ["dificilísimo", "riquísima"], { c: "acen", s: 4 }],
+  ["es_comp", "corr", "Tengo menos que diez euros.", ["Tengo menos de diez euros."], { c: "synt", s: 5 }],
+  ["es_impe", "cloze", "Niños, ___ (venir, vosotros) aquí, ___ (lavarse, vosotros) las manos y ___ (comer, vosotros).", ["venid", "lavaos", "comed"], { c: "conj", s: [3, 4] }],
+  ["es_impe", "cloze", "___ (hablar, tú) más despacio, ___ (escuchar, tú) con atención y ___ (escribir, tú) las palabras nuevas.", ["Habla", "escucha", "escribe"], { c: "conj", s: 0 }],
+  ["es_acen", "corr", "¿Donde vives y cuando llegaste?", ["¿Dónde vives y cuándo llegaste?"], { c: "acen", s: 1 }],
+  ["es_acen", "corr", "Él fué a la fiesta y vió a todos.", ["Él fue a la fiesta y vio a todos."], { c: "acen", s: 3 }],
+  ["es_reflex", "cloze", "Tengo que ___ (levantarse) pronto. ¿Quieres ___ (quedarse) a cenar?", ["levantarme", "quedarte"], { c: "pron", s: 1 }],
+  ["es_reflex", "corr", "Ella se pinta sus uñas y se seca su pelo.", ["Ella se pinta las uñas y se seca el pelo."], { c: "ptstr", s: 2 }],
+  ["es_reflex", "corr", "Me llamo Ana y me voy mañana a Roma.", ["Me llamo Ana y me voy mañana a Roma."], { c: "pron", s: 3 }],
+  ["es_reflex", "trad", "Eu fico em casa e eles vão embora.", ["Me quedo en casa y ellos se van."], { c: "pron", s: 3 }],
+  ["es_oblig", "cloze", "Tú ___ (deber) dormir más y vosotros ___ (deber) comer mejor.", ["debes", "debéis"], { c: "conj", s: 2 }],
+  ["es_oblig", "cloze", "Para viajar a Japón ___ (impersonal) tener pasaporte. Yo ___ (personal) renovar el mío.", ["hay que", "tengo que"], { c: "ptstr", s: [1, 0] }],
+  ["es_oblig", "corr", "Debes de estudiar más para el examen.", ["Debes estudiar más para el examen."], { c: "prep", s: 2 }],
+  ["es_oblig", "corr", "Tengo que ir al banco y tienes que acompañarme.", ["Tengo que ir al banco y tienes que acompañarme."], { c: "ptstr", s: 0 }],
+  ["es_oblig", "corr", "Hay que nosotros salir ya.", ["Tenemos que salir ya.", "Hay que salir ya."], { c: "ptstr", s: 1 }],
+  ["es_oblig", "trad", "Você (tú) deve descansar mais.", ["Debes descansar más.", "Tienes que descansar más."], { c: "ptstr", s: 2 }],
+  ["es_oblig", "trad", "É preciso chegar cedo e nós temos que pegar o trem.", ["Hay que llegar temprano y tenemos que coger el tren.", "Hay que llegar pronto y tenemos que tomar el tren."], { c: "ptstr", s: [1, 0] }],
+  ["es_oblig", "transf", "Hay que estudiar y hay que trabajar.", ["Tengo que estudiar y tengo que trabajar."], { c: "ptstr", s: 0, i: "Cambia «hay que» por «tener que» (yo)." }],
+  ["es_pos", "cloze", "___ (de nosotros) casa es pequeña, pero ___ (de ellos) coche es grande. ¿Dónde están ___ (de ti) llaves?", ["Nuestra", "su", "tus"], { c: "pron", s: 0 }],
+  ["es_pos", "cloze", "—¿Qué es ___ (eso / ese) que llevas ahí? —¿___ (Eso / Ese)? Un regalo. —¿Y ___ (aquello / aquel) de allí?", ["eso", "Eso", "aquello"], { c: "pron", s: 3 }],
+  ["es_pos", "corr", "Nuestros amigos y sus hijas vienen a mi casa.", ["Nuestros amigos y sus hijas vienen a mi casa."], { c: "pron", s: 0 }],
+  ["es_pos", "corr", "¿Qué es este? —Es un regalo.", ["¿Qué es esto? —Es un regalo."], { c: "pron", s: 3 }],
+  ["es_pos", "trad", "Esses livros são meus, não são seus (tú).", ["Esos libros son míos, no son tuyos."], { c: "pron", s: 1 }],
+  ["es_tamb", "cloze", "—Yo no hablo alemán. —Yo ___ (diferente): lo hablo un poco. —A mí me encanta el jazz. —A mí ___ (diferente).", ["sí", "no"], { c: "ptstr", s: 1 }],
+  ["es_tamb", "cloze", "—Me gusta el mar. —A mí ___ . —No tengo hambre. —Yo ___ .", ["también", "tampoco"], { c: "ptstr", s: 0 }],
+  ["es_tamb", "corr", "—No me gustan los gatos. —A mí también, me encantan.", ["—No me gustan los gatos. —A mí sí, me encantan."], { c: "ptstr", s: 1 }],
+  ["es_tamb", "corr", "—Tengo frío. —Yo tampoco.", ["—Tengo frío. —Yo también."], { c: "ptstr", s: 0 }],
+  ["es_tamb", "corr", "Ana no viene y Pedro tampoco.", ["Ana no viene y Pedro tampoco."], { c: "ptstr", s: 0 }],
+  ["es_tamb", "trad", "Eu não fumo, mas meu irmão fuma.", ["Yo no fumo, pero mi hermano sí."], { c: "ptstr", s: 1 }],
+  ["es_tamb", "trad", "Eles também moram aqui.", ["Ellos también viven aquí."], { c: "ptstr", s: 0 }],
+  ["es_tiempo", "cloze", "___ dos años ___ vivo en Madrid.", ["Hace", "que"], { c: "prep", s: 3 }],
+  ["es_tiempo", "cloze", "Trabajo aquí ___ marzo y estudio inglés ___ el año pasado.", ["desde", "desde"], { c: "prep", s: 1 }],
+  ["es_tiempo", "corr", "Hace tres meses que no veo a mi familia.", ["Hace tres meses que no veo a mi familia."], { c: "prep", s: 3 }],
+  ["es_tiempo", "corr", "Vivo aquí desde hace 2020.", ["Vivo aquí desde 2020."], { c: "prep", s: 1 }],
+  ["es_tiempo", "trad", "Faz um ano que eu estudo espanhol.", ["Hace un año que estudio español.", "Estudio español desde hace un año."], { c: "prep", s: 3 }],
+  ["es_tiempo", "transf", "Trabajo aquí desde hace seis meses.", ["Hace seis meses que trabajo aquí."], { c: "prep", s: 3, i: "Usa «hace… que»." }],
+  ["es_plural", "cloze", "Tengo dos ___ (pez) y tres ___ (luz) en el salón. Las ___ (vez) que voy, compro más.", ["peces", "luces", "veces"], { c: "acen", s: 1 }],
+  ["es_plural", "cloze", "Los ___ (joven) escuchan ___ (canción) en los ___ (autobús).", ["jóvenes", "canciones", "autobuses"], { c: "acen", s: 2 }],
+  ["es_plural", "corr", "Tengo muchos examenes y dos reuniónes.", ["Tengo muchos exámenes y dos reuniones."], { c: "acen", s: 2 }],
+  ["es_plural", "corr", "Hay muchos lápizes y dos pezes.", ["Hay muchos lápices y dos peces."], { c: "acen", s: 1 }],
+  ["es_plural", "corr", "Los hoteles y los restaurantes son caros.", ["Los hoteles y los restaurantes son caros."], { c: "acen", s: 0 }],
+  ["es_plural", "transf", "El examen es fácil y la canción es bonita.", ["Los exámenes son fáciles y las canciones son bonitas."], { c: "acen", s: [0, 2], i: "Pon la frase en plural." }],
+  ["es_plural", "trad", "Os papéis estão na mesa dos professores.", ["Los papeles están en la mesa de los profesores."], { c: "acen", s: 0 }],
+  ["es_plural", "trad", "Às vezes eu acendo as luzes.", ["A veces enciendo las luces."], { c: "acen", s: 1 }],
+  ["es_indefq", "cloze", "Hay ___ (demasiado) coches y ___ (bastante) ruido.", ["demasiados", "bastante"], { c: "synt", s: 3 }],
+  ["es_indefq", "cloze", "—¿Tienes ___ (alguno) pregunta? —No, no tengo ___ (ninguno).", ["alguna", "ninguna"], { c: "synt", s: 1 }],
+  ["es_indefq", "cloze", "Es un ___ (grande) hombre y un ___ (bueno) padre. Vive en el ___ (tercero) piso.", ["gran", "buen", "tercer"], { c: "synt", s: 2 }],
+  ["es_indefq", "corr", "No hay nada en la nevera y no ha venido nadie.", ["No hay nada en la nevera y no ha venido nadie."], { c: "synt", s: 0 }],
+  ["es_indefq", "corr", "¿Tienes algún libro? —No, no tengo ningún.", ["¿Tienes algún libro? —No, no tengo ninguno."], { c: "synt", s: 1 }],
+  ["es_indefq", "corr", "Hay demasiados gente y bastantes ruido.", ["Hay demasiada gente y bastante ruido."], { c: "synt", s: 3 }],
+  ["es_indefq", "trad", "Alguém quer alguma coisa?", ["¿Alguien quiere algo?"], { c: "synt", s: 0 }],
+  ["es_indefq", "trad", "Hoje é um mau dia, mas amanhã será um bom dia.", ["Hoy es un mal día, pero mañana será un buen día."], { c: "synt", s: 2 }],
+  ["es_prepron", "cloze", "Esta carta es para ___ (yo) y aquella es para ___ (tú). ¿Y para ___ (él)?", ["mí", "ti", "él"], { c: "pron", s: 0 }],
+  ["es_prepron", "cloze", "—¿Vienes ___ (con + yo)? —Hoy no puedo ir ___ (con + tú).", ["conmigo", "contigo"], { c: "pron", s: 1 }],
+  ["es_prepron", "corr", "Entre mí y ti, esto es un secreto.", ["Entre tú y yo, esto es un secreto."], { c: "pron", s: 2 }],
+  ["es_prepron", "corr", "¿Quieres venir con mí? Puedo ir con ti.", ["¿Quieres venir conmigo? Puedo ir contigo."], { c: "pron", s: 1 }],
+  ["es_prepron", "corr", "Según tú, ¿quién tiene razón?", ["Según tú, ¿quién tiene razón?"], { c: "pron", s: 2 }],
+  ["es_prepron", "corr", "A mí me encanta y a ti te gusta.", ["A mí me encanta y a ti te gusta."], { c: "pron", s: 0 }],
+  ["es_prepron", "trad", "Ela falou comigo e depois com você (tú).", ["Habló conmigo y después contigo."], { c: "pron", s: 1 }],
+  ["es_prepron", "trad", "Isso é muito importante para mim e para ela.", ["Esto es muy importante para mí y para ella.", "Eso es muy importante para mí y para ella."], { c: "pron", s: 0 }],
+  ["es_posinf", "cloze", "¿El café? ___ tomo sin azúcar. ¿Las llaves? No ___ encuentro.", ["Lo", "las"], { c: "pron", s: 0 }],
+  ["es_posinf", "cloze", "Tengo que ___ (llamar + la) y quiero ___ (ver + te) mañana.", ["llamarla", "verte"], { c: "pron", s: 1 }],
+  ["es_posinf", "cloze", "Estoy ___ (esperar + te) y estamos ___ (mirar + lo).", ["esperándote", "mirándolo"], { c: "acen", s: 2 }],
+  ["es_posinf", "cloze", "___ (Decir + me) la verdad y no ___ (mentir + me, tú) más.", ["Dime", "me mientas"], { c: "pron", s: 3 }],
+  ["es_posinf", "corr", "Yo lo veo cada día y la llamo cada noche.", ["Yo lo veo cada día y la llamo cada noche."], { c: "pron", s: 0 }],
+  ["es_posinf", "corr", "Estoy leyendolo ahora.", ["Estoy leyéndolo ahora.", "Lo estoy leyendo ahora."], { c: "acen", s: 2 }],
+  ["es_posinf", "corr", "Siéntese y no se preocupe.", ["Siéntese y no se preocupe."], { c: "pron", s: 3 }],
+  ["es_posinf", "transf", "Lo voy a comprar y te voy a llamar.", ["Voy a comprarlo y voy a llamarte."], { c: "pron", s: 1, i: "Pon los pronombres después del infinitivo." }],
+  ["es_fut", "cloze", "Mañana ___ (trabajar, yo) en casa y por la tarde ___ (estudiar, nosotros). Mis padres ___ (llegar) a las nueve.", ["trabajaré", "estudiaremos", "llegarán"], { c: "conj", s: 0 }],
+  ["es_fut", "cloze", "El lunes ___ (salir, yo) temprano, ___ (poner) la alarma y ___ (saber) la respuesta.", ["saldré", "pondré", "sabré"], { c: "conj", s: 1 }],
+  ["es_fut", "cloze", "¿___ (Querer, tú) venir? ___ (Haber) mucha gente y ___ (poder, nosotros) bailar.", ["Querrás", "Habrá", "podremos"], { c: "conj", s: 1 }],
+  ["es_fut", "corr", "Mañana visitaré a mis abuelos y comeré con ellos.", ["Mañana visitaré a mis abuelos y comeré con ellos."], { c: "conj", s: 0 }],
+  ["es_fut", "corr", "El año que viene teneré más tiempo y vendré a verte.", ["El año que viene tendré más tiempo y vendré a verte."], { c: "conj", s: 1 }],
+  ["es_fut", "corr", "Mañana iremos a la playa y nadaramos.", ["Mañana iremos a la playa y nadaremos."], { c: "conj", s: 0 }],
+  ["es_fut", "trad", "Eu direi a verdade e farei o necessário.", ["Diré la verdad y haré lo necesario."], { c: "conj", s: 1 }],
+  ["es_fut", "transf", "Vamos a tener tiempo y vamos a hacer la cena.", ["Tendremos tiempo y haremos la cena."], { c: "conj", s: 1, i: "Pon la frase en futuro simple." }],
+  ["es_indimp1", "cloze", "De joven, ___ (jugar, yo) al tenis todos los días. Un día, ___ (ganar) un torneo.", ["jugaba", "gané"], { c: "pasados", s: 0 }],
+  ["es_indimp1", "cloze", "El verano pasado ___ (ir, nosotros) a Italia. Antes ___ (ir) siempre a Portugal.", ["fuimos", "íbamos"], { c: "pasados", s: 0 }],
+  ["es_indimp1", "cloze", "Mientras ___ (cocinar, yo), ___ (sonar) el timbre. ___ (Ser) mi vecina.", ["cocinaba", "sonó", "Era"], { c: "pasados", s: [1, 2] }],
+  ["es_indimp1", "corr", "Ayer comía en un restaurante y después iba al cine.", ["Ayer comí en un restaurante y después fui al cine."], { c: "pasados", s: 0 }],
+  ["es_indimp1", "corr", "La casa tenía tres habitaciones y un jardín muy grande.", ["La casa tenía tres habitaciones y un jardín muy grande."], { c: "pasados", s: 1 }],
+  ["es_indimp1", "corr", "Cuando llegué, todos dormieron.", ["Cuando llegué, todos dormían."], { c: "pasados", s: 2 }],
+  ["es_indimp1", "trad", "Estava frio, então eu coloquei um casaco.", ["Hacía frío, así que me puse un abrigo."], { c: "pasados", s: 1 }],
+  ["es_indimp1", "transf", "Leo cuando mi hermano llega.", ["Leía cuando mi hermano llegó."], { c: "pasados", s: [1, 2], i: "Cuenta la frase en pasado." }],
+  ["es_condcort", "cloze", "Buenas tardes, ___ (querer, yo) dos entradas. Mi amigo ___ (querer) una también.", ["querría|quería|quisiera", "querría|quería|quisiera"], { c: "conj", s: 0 }],
+  ["es_condcort", "cloze", "¿___ (Poder, tú) ayudarme? Me ___ (gustar) terminar hoy. ¿Le ___ (importar, usted) esperar?", ["Podrías", "gustaría", "importaría"], { c: "conj", s: [1, 2] }],
+  ["es_condcort", "corr", "Quisiera una mesa para cuatro, por favor.", ["Quisiera una mesa para cuatro, por favor."], { c: "conj", s: 0 }],
+  ["es_condcort", "corr", "¿Podría usted me decir dónde está la estación?", ["¿Podría usted decirme dónde está la estación?", "¿Me podría decir dónde está la estación?"], { c: "pron", s: 1 }],
+  ["es_condcort", "corr", "Me gustaríamos ir al museo.", ["Nos gustaría ir al museo."], { c: "gustar", s: 2 }],
+  ["es_condcort", "trad", "Eu queria um café com leite, por favor.", ["Quería un café con leche, por favor.", "Querría un café con leche, por favor.", "Quisiera un café con leche, por favor."], { c: "conj", s: 0 }],
+  ["es_condcort", "trad", "Você (tú) poderia abrir a janela?", ["¿Podrías abrir la ventana?"], { c: "conj", s: 1 }],
+  ["es_condcort", "transf", "Dame la sal.", ["¿Podrías darme la sal, por favor?", "¿Me podrías pasar la sal, por favor?"], { c: "ptstr", s: [0, 1], i: "Haz la petición más educada." }],
+  ["es_porpara1", "cloze", "Salgo ___ Barcelona mañana. Este libro es ___ ti. Estudio ___ aprobar.", ["para", "para", "para"], { c: "porpara", s: 0 }],
+  ["es_porpara1", "cloze", "Gracias ___ todo. Te lo envío ___ correo y paso ___ tu casa ___ la tarde.", ["por", "por", "por", "por"], { c: "porpara", s: 1 }],
+  ["es_porpara1", "cloze", "Lo hice ___ ti (porque te quiero) y lo compré ___ ti (como regalo).", ["por", "para"], { c: "porpara", s: [0, 1] }],
+  ["es_porpara1", "corr", "Pagué cien euros para este abrigo.", ["Pagué cien euros por este abrigo."], { c: "porpara", s: 1 }],
+  ["es_porpara1", "corr", "Voy al gimnasio por estar en forma.", ["Voy al gimnasio para estar en forma."], { c: "porpara", s: 0 }],
+  ["es_porpara1", "corr", "Paseamos por la playa y compramos un helado para los niños.", ["Paseamos por la playa y compramos un helado para los niños."], { c: "porpara", s: [0, 1] }],
+  ["es_porpara1", "trad", "Eu não fui por causa da chuva.", ["No fui por la lluvia.", "No fui a causa de la lluvia."], { c: "porpara", s: 1 }],
+  ["es_porpara1", "trad", "O trem para Madri sai às dez.", ["El tren para Madrid sale a las diez.", "El tren a Madrid sale a las diez."], { c: "porpara", s: 0 }],
+  ["es_interrog", "cloze", "No sé ___ hora es ni ___ empieza la película.", ["qué", "cuándo"], { c: "acen", s: 4 }],
+  ["es_interrog", "cloze", "¡___ calor hace! ¡___ gente hay en la playa!", ["Qué", "Cuánta"], { c: "acen", s: 3 }],
+  ["es_interrog", "cloze", "¿___ es la capital de Perú? ¿___ es esto? ¿___ de los dos prefieres?", ["Cuál", "Qué", "Cuál"], { c: "ptstr", s: 0 }],
+  ["es_interrog", "corr", "¿De donde eres y adonde vas?", ["¿De dónde eres y adónde vas?"], { c: "acen", s: 2 }],
+  ["es_interrog", "corr", "Dime cuánto cuesta y dónde lo compraste.", ["Dime cuánto cuesta y dónde lo compraste."], { c: "acen", s: 4 }],
+  ["es_interrog", "corr", "¿Cuántas años tiene tu hijo?", ["¿Cuántos años tiene tu hijo?"], { c: "genero", s: 1 }],
+  ["es_interrog", "trad", "Que casa grande!", ["¡Qué casa tan grande!", "¡Qué casa más grande!"], { c: "ptstr", s: 3 }],
+  ["es_interrog", "transf", "Mi número es el 655 123 456.", ["¿Cuál es tu número?", "¿Cuál es tu número de teléfono?"], { c: "ptstr", s: 0, i: "Escribe la pregunta que corresponde a esta respuesta (tú)." }],
+  ["es_yatod", "cloze", "___ (cada día) desayuno café, pero ___ (cero veces) como pan. ___ veces (algunos días) tomo zumo.", ["Siempre", "nunca", "A"], { c: "ptstr", s: 2 }],
+  ["es_yatod", "cloze", "Mi hermano ___ vive aquí: se fue a Londres. Yo ___ no he terminado la carrera.", ["ya no", "todavía|aún"], { c: "ptstr", s: 1 }],
+  ["es_yatod", "corr", "Nunca no como carne.", ["Nunca como carne.", "No como carne nunca."], { c: "synt", s: 2 }],
+  ["es_yatod", "corr", "Ya no trabajo allí y todavía no tengo otro trabajo.", ["Ya no trabajo allí y todavía no tengo otro trabajo."], { c: "ptstr", s: 1 }],
+  ["es_yatod", "corr", "¿Todavía has terminado? —Sí, ya he terminado.", ["¿Ya has terminado? —Sí, ya he terminado."], { c: "ptstr", s: 0 }],
+  ["es_yatod", "trad", "Ele não mora mais aqui.", ["Ya no vive aquí."], { c: "ptstr", s: 1 }],
+  ["es_yatod", "trad", "Às vezes eu chego tarde, mas nunca falto.", ["A veces llego tarde, pero nunca falto."], { c: "ptstr", s: 2 }],
+  ["es_yatod", "transf", "¿Ya has comido?", ["No, todavía no he comido.", "No, aún no he comido."], { c: "ptstr", s: 1, i: "Responde en negativo con «todavía no»." }],
+  ["es_prep", "cloze", "El autobús va ___ Madrid ___ Toledo. Trabajo ___ las nueve ___ las cinco.", ["de|desde", "a|hasta", "de|desde", "a|hasta"], { c: "prep", s: 1 }],
+  ["es_prep", "cloze", "Salgo ___ casa a las ocho, voy ___ la oficina y estoy ___ la oficina hasta las seis.", ["de", "a", "en"], { c: "prep", s: 2 }],
+  ["es_prep", "corr", "Salí en casa tarde y fui en la universidad.", ["Salí de casa tarde y fui a la universidad."], { c: "prep", s: 2 }],
+  ["es_prep", "corr", "Estoy en el trabajo y voy a casa a las seis.", ["Estoy en el trabajo y voy a casa a las seis."], { c: "prep", s: 0 }],
+  ["es_prep", "corr", "Camino desde mi casa hasta el parque cada día.", ["Camino desde mi casa hasta el parque cada día."], { c: "prep", s: 1 }],
+  ["es_prep", "trad", "Ela foi para a Espanha e está em Valência.", ["Se fue a España y está en Valencia.", "Fue a España y está en Valencia."], { c: "prep", s: [0, 2] }],
+  ["es_prep", "trad", "Do centro até a praia são dez minutos.", ["Del centro a la playa hay diez minutos.", "Desde el centro hasta la playa hay diez minutos."], { c: "prep", s: 1 }],
+  ["es_orto", "cloze", "Mi ___ (ermano) ___ (abla) mucho y ___ (oy) no está en casa.", ["hermano", "habla", "hoy"], { c: "acen", s: 1, i: "Escribe las palabras con la ortografía correcta." }],
+  ["es_orto", "cloze", "Quiero una ___ (cerbeza / cerveza) y unos ___ (peces / peses).", ["cerveza", "peces"], { c: "acen", s: [0, 2] }],
+  ["es_orto", "cloze", "La ___ (direcion / dirección) y la ___ (lección / lecsión) están en el libro.", ["dirección", "lección"], { c: "acen", s: 3 }],
+  ["es_orto", "corr", "La educacion es importante y la leción de hoy es facil.", ["La educación es importante y la lección de hoy es fácil."], { c: "acen", s: 3 }],
+  ["es_orto", "corr", "Antes bivía en Madrid y trabajava mucho.", ["Antes vivía en Madrid y trabajaba mucho."], { c: "acen", s: 0 }],
+  ["es_orto", "corr", "Ahora hay mucha gente en la calle.", ["Ahora hay mucha gente en la calle."], { c: "acen", s: 1 }],
+  ["es_orto", "trad", "Eu conheço a cidade e faço o almoço.", ["Conozco la ciudad y hago la comida."], { c: "acen", s: 2 }],
+  ["es_conect", "cloze", "Hablo español ___ inglés. ¿Quieres este ___ otro?", ["e", "u"], { c: "acen", s: 0 }],
+  ["es_conect", "cloze", "No quiero té, ___ café. Me gusta, ___ es caro.", ["sino", "pero"], { c: "ptlex", s: 1 }],
+  ["es_conect", "cloze", "No vine ___ estaba enfermo. ___ estaba enfermo, me quedé en casa. Estaba enfermo, ___ me quedé en casa.", ["porque", "Como", "así que"], { c: "ptlex", s: 2 }],
+  ["es_conect", "cloze", "___ yo cocino, tú pones la mesa. ___ llegué, todos dormían.", ["Mientras", "Cuando"], { c: "ptlex", s: 3 }],
+  ["es_conect", "corr", "No es mi hermano, pero mi primo.", ["No es mi hermano, sino mi primo."], { c: "ptlex", s: 1 }],
+  ["es_conect", "corr", "Estudio francés y inglés y mi hija estudia alemán o holandés.", ["Estudio francés e inglés y mi hija estudia alemán u holandés."], { c: "acen", s: 0 }],
+  ["es_conect", "corr", "Como llovía, nos quedamos en casa.", ["Como llovía, nos quedamos en casa."], { c: "ptlex", s: 2 }],
+  ["es_conect", "trad", "Eu estava cansado, então fui dormir cedo.", ["Estaba cansado, así que me fui a dormir temprano.", "Estaba cansado, así que me fui a dormir pronto."], { c: "ptlex", s: 2 }],
+  ["es_artuso", "corr", "¿Cómo está, el señor García? —Bien, gracias.", ["¿Cómo está, señor García? —Bien, gracias."], { c: "art", s: 2 }],
+  ["es_artuso", "corr", "Me duelen mis piernas después de correr.", ["Me duelen las piernas después de correr."], { c: "ptstr", s: 5 }],
+  ["es_artuso", "corr", "Mi hija toca piano y juega fútbol.", ["Mi hija toca el piano y juega al fútbol."], { c: "art", s: 6 }],
+  ["es_regimen", "corr", "Entramos en la tienda y llegamos a casa a las diez.", ["Entramos en la tienda y llegamos a casa a las diez."], { c: "prep", s: 3 }],
+  ["es_regimen", "corr", "Tenemos a tres hijos y buscamos a una casa grande.", ["Tenemos tres hijos y buscamos una casa grande."], { c: "prep", s: 1 }],
+  ["es_oi", "cloze", "¿El coche? ___ vendí. ¿Las maletas? ___ dejé en el hotel. ¿A tus padres? ___ vi ayer.", ["Lo", "Las", "Los|Les"], { c: "pron", s: 1 }],
+  ["es_oi", "corr", "A mi hermana la gusta el chocolate.", ["A mi hermana le gusta el chocolate."], { c: "gustar", s: 3 }],
+  ["es_oi", "corr", "A Pedro dije la verdad.", ["A Pedro le dije la verdad."], { c: "pron", s: 2 }],
+  ["es_oi", "trad", "Eu mandei uma mensagem para a Ana.", ["Le mandé un mensaje a Ana.", "Le envié un mensaje a Ana."], { c: "pron", s: [0, 2] }],
+  ["es_presirr", "cloze", "Nosotros ___ (volver) tarde y ___ (dormir) poco. Yo ___ (ofrecer) mi ayuda.", ["volvemos", "dormimos", "ofrezco"], { c: "conj", s: [5, 3] }],
+  ["es_indefirr", "cloze", "Ayer ___ (tocar, yo) la guitarra, ___ (pagar) la cena y ___ (almorzar) tarde.", ["toqué", "pagué", "almorcé"], { c: "acen", s: 5 }],
+  ["es_indefirr", "corr", "Los niños leieron el cuento y lo oyeron dos veces.", ["Los niños leyeron el cuento y lo oyeron dos veces."], { c: "pasados", s: 4 }],
+  ["es_indefirr", "corr", "Mi madre pedió la cuenta y mi padre dormió en el coche.", ["Mi madre pidió la cuenta y mi padre durmió en el coche."], { c: "pasados", s: 3 }],
+  ["es_partic", "cloze", "Hemos ___ (descubrir) un restaurante nuevo y hemos ___ (resolver) el problema.", ["descubierto", "resuelto"], { c: "pasados", s: 0 }],
+  ["es_partic", "corr", "En 2020 me he mudado a Madrid.", ["En 2020 me mudé a Madrid."], { c: "pasados", s: 2 }],
+  ["es_partic", "corr", "Esta semana he trabajado mucho y hoy he dormido poco.", ["Esta semana he trabajado mucho y hoy he dormido poco."], { c: "pasados", s: 1 }],
+  ["es_partic", "trad", "Ontem eu vi a Ana, mas hoje ainda não a vi.", ["Ayer vi a Ana, pero hoy todavía no la he visto."], { c: "pasados", s: [2, 1] }],
+  ["es_hora", "cloze", "En mi empresa trabajan ___ (45) personas y en la otra, ___ (63).", ["cuarenta y cinco", "sesenta y tres"], { c: "voc", s: 0, i: "Escribe los números en letras." }],
+  ["es_hora", "cloze", "El viaje cuesta ___ (350) euros y el hotel, ___ (990).", ["trescientos cincuenta", "novecientos noventa"], { c: "voc", s: 0, i: "Escribe los números en letras." }],
+  ["es_hora", "corr", "Tengo treinta y dos años y mi padre, sesentaicinco.", ["Tengo treinta y dos años y mi padre, sesenta y cinco."], { c: "acen", s: 0 }],
+  ["es_hora", "corr", "Son las dos menos cuarto y salgo a la una y media.", ["Son las dos menos cuarto y salgo a la una y media."], { c: "synt", s: 3 }],
+  ["es_hora", "corr", "Este libro tiene ciento páginas.", ["Este libro tiene cien páginas."], { c: "synt", s: 1 }],
+  ["es_hora", "trad", "O jogo começa às oito e quinze.", ["El partido empieza a las ocho y cuarto.", "El partido empieza a las ocho y quince."], { c: "synt", s: 3 }],
+  ["es_prept", "cloze", "Llegamos ___ Roma por la noche y ___ hotel a las once.", ["a", "al"], { c: "prep", s: 4 }],
+  ["es_prept", "cloze", "___ lunes tengo reunión, ___ agosto me voy de vacaciones y ___ 2027 cambio de trabajo.", ["El", "en", "en"], { c: "prep", s: 1 }],
+  ["es_prept", "corr", "Llegué en el aeropuerto a las seis.", ["Llegué al aeropuerto a las seis."], { c: "prep", s: 4 }],
+  ["es_prept", "corr", "Por la noche salgo con amigos y por la mañana duermo.", ["Por la noche salgo con amigos y por la mañana duermo."], { c: "prep", s: 0 }],
+  ["es_prept", "corr", "La clase es desde las nueve a las once.", ["La clase es de nueve a once.", "La clase es desde las nueve hasta las once.", "La clase es de las nueve a las once."], { c: "prep", s: 2 }],
+  ["es_prept", "trad", "Eu cheguei em Lisboa de ônibus.", ["Llegué a Lisboa en autobús."], { c: "prep", s: [3, 4] }],
+  ["es_genero", "corr", "El sangre es rojo y el leche es blanco.", ["La sangre es roja y la leche es blanca."], { c: "genero", s: 1 }],
+  ["es_genero", "corr", "Te mandé una mensaje sobre la garaje.", ["Te mandé un mensaje sobre el garaje."], { c: "genero", s: 0 }],
+  ["es_genero", "cloze", "Pon ___ (el / la) miel y ___ (el / la) sal en la mesa, y no olvides ___ (el / la) leche.", ["la", "la", "la"], { c: "genero", s: 1 }],
+  ["es_genero", "trad", "O cheiro da cozinha e a cor da parede são horríveis.", ["El olor de la cocina y el color de la pared son horribles."], { c: "genero", s: 2 }],
+  ["es_perif2", "cloze", "Mañana ___ (volver, yo) a intentarlo. ¿Y tú, cuándo ___ (volver) a llamar? (presente)", ["vuelvo", "vuelves"], { c: "conj", s: 0 }],
+  ["es_perif2", "cloze", "Mi padre ___ (dejar, presente) de trabajar el mes que viene. Yo ___ (dejar, indefinido) de comer carne hace un año.", ["deja", "dejé"], { c: "conj", s: 1 }],
+  ["es_perif2", "cloze", "Los niños ___ (acabar) de llegar y nosotros ___ (acabar) de cenar. (presente)", ["acaban", "acabamos"], { c: "conj", s: 2 }],
+  ["es_perif2", "cloze", "Ayer ___ (empezar, yo) a estudiar alemán y mi hermano ___ (empezar) a trabajar.", ["empecé", "empezó"], { c: "conj", s: 3 }],
+  ["es_perif2", "corr", "Empecé de trabajar a las nueve.", ["Empecé a trabajar a las nueve."], { c: "prep", s: 3 }],
+  ["es_perif2", "corr", "Volví a ver la película y me gustó más.", ["Volví a ver la película y me gustó más."], { c: "prep", s: 0 }],
+  ["es_perif2", "corr", "Acabo a terminar el informe.", ["Acabo de terminar el informe."], { c: "prep", s: 2 }],
+  ["es_perif2", "trad", "Eu parei de beber café.", ["He dejado de tomar café.", "Dejé de tomar café."], { c: "prep", s: 1 }],
+  ["es_gustar", "corr", "—No me gusta el frío. —A mí también.", ["—No me gusta el frío. —A mí tampoco."], { c: "gustar", s: 3 }],
+  ["es_gustar", "corr", "—Me encanta viajar. —A mí tampoco.", ["—Me encanta viajar. —A mí también."], { c: "gustar", s: 3 }],
+  ["es_comp", "corr", "Estoy cansadísimo y el café está riquísimo.", ["Estoy cansadísimo y el café está riquísimo."], { c: "synt", s: 4 }],
+  ["es_comp", "cloze", "Hay ___ (+) de cien personas y ___ (−) de diez coches.", ["más", "menos"], { c: "synt", s: 5 }],
+  ["es_impe", "corr", "Chicos, sentados y escuchadme.", ["Chicos, sentaos y escuchadme."], { c: "conj", s: 3 }],
+  ["es_acen", "corr", "Ayer fuí al cine y dí un paseo.", ["Ayer fui al cine y di un paseo."], { c: "acen", s: 3 }],
+  ["es_reflex", "corr", "Voy a ducharme y luego voy a acostarme.", ["Voy a ducharme y luego voy a acostarme."], { c: "pron", s: 1 }],
+  ["es_reflex", "trad", "Eu lavo o rosto e escovo os dentes.", ["Me lavo la cara y me cepillo los dientes."], { c: "ptstr", s: 2 }],
+  ["es_artuso", "corr", "La agua está fría y la aula está vacía.", ["El agua está fría y el aula está vacía."], { c: "art", s: 0 }],
+  ["es_artuso", "cloze", "—Buenos días, ___ (señor) Gómez. —Hola. ¿Está ___ (señora) López?", ["señor", "la señora"], { c: "art", s: 2 }],
+  ["es_artuso", "corr", "Mi tía es una arquitecta y mi tío es un periodista.", ["Mi tía es arquitecta y mi tío es periodista."], { c: "art", s: 3 }],
+  ["es_artuso", "trad", "Você (tú) quer pão? Tem queijo também.", ["¿Quieres pan? También hay queso."], { c: "art", s: 4 }],
+  ["es_artuso", "trad", "Ele quebrou a perna.", ["Se rompió la pierna.", "Se ha roto la pierna."], { c: "ptstr", s: 5 }],
+  ["es_artuso", "trad", "Eu jogo tênis e toco violão.", ["Juego al tenis y toco la guitarra."], { c: "art", s: 6 }],
+  ["es_indefirr", "corr", "Ayer llegé tarde y busqué un taxi.", ["Ayer llegué tarde y busqué un taxi."], { c: "acen", s: 5 }],
+  ["es_hora", "corr", "Es el primero día y vivo en el tercero piso.", ["Es el primer día y vivo en el tercer piso."], { c: "synt", s: 2 }],
+  ["es_hora", "trad", "A festa é no dia 15 de agosto.", ["La fiesta es el 15 de agosto."], { c: "prep", s: 4 }],
 ];
 
 // ===== Textos da interface: 100% na língua do dia =====
@@ -1840,10 +2425,10 @@ const I18N = {
     hmTitle: "Où vous vous trompez", hmSub: "Part des réponses avec une erreur de chaque catégorie, par semaine.", noErrorsYet: "Pas encore d'erreurs classées.",
     deltaTitle: "Ce qui a changé", deltaSub: "4 dernières semaines contre les 4 précédentes.", better: "En progrès", worse: "En recul",
     per100Title: "Erreurs pour 100 mots (rédactions)", writingTitle: "Notes d'écriture", writingSub: "Évolution des notes de chaque rédaction (sur 5).",
-    topicTitle: "Réussite par thème · {lv}", topicSub: "28 derniers jours, du plus faible au plus fort.", noAttempts: "Pas encore de réponses à ce niveau.",
+    topicTitle: "Maîtrise par thème · {lv}", topicSub: "Un thème est maîtrisé après 12 réponses à 80 %, chaque point réussi deux jours différents, puis une épreuve surprise de 6 questions nouvelles. Une erreur sur ce point, même dans un autre exercice, le rouvre.", ms_st_training: "En cours", ms_st_exam: "Épreuve à venir", ms_st_mastered: "Maîtrisé", ms_st_reopened: "Rouvert", msFresh: "Pas encore commencés", msProg: "{n}/{need} réponses · {s}/{t} points · {acc} %", msReopenProg: "{n}/{need} réussites depuis l'erreur", msExt: "{n} erreur(s) hors thème", ms_pass: "Épreuve réussie : « {topic} » est maîtrisé !", ms_fail: "Épreuve ratée : « {topic} ». On continue l'entraînement.", ms_reopen: "« {topic} » est rouvert : une erreur sur ce point.", ms_back: "« {topic} » est de nouveau maîtrisé.", noAttempts: "Pas encore de réponses à ce niveau.",
     timeTitle: "Temps par type de question", timeSub: "Temps moyen pour répondre, sans l'attente de la correction.", blockAvg: "Bloc moyen : {t} (sur {n} blocs).",
     setTitle: "Réglages", levels: "Niveaux", since: "depuis le {d}", change: "Changer", confirm: "Confirmer le changement",
-    levelRule: "Pour passer au niveau suivant : au moins 28 jours au niveau, 85 % de réussite sur les 28 derniers jours, et chaque thème du niveau à 80 % ou plus avec au moins 5 réponses.",
+    levelRule: "Pour passer au niveau suivant : au moins 28 jours au niveau, 85 % de réussite sur les 28 derniers jours, et tous les thèmes du niveau maîtrisés (12 réponses à 80 %, chaque point réussi deux jours différents, épreuve surprise réussie, et aucun thème rouvert).",
     levelChanged: "{lang} : niveau {lv}.",
     blockSize: "Taille des blocs", blockAvgWait: "Suggestion de taille après {n} blocs de plus.", suggest: "Suggestion : {n} questions par bloc.", accept: "Passer à {n}",
     voices: "Voix des dictées", voicesNote: "Seules les voix de France (fr-FR) et d'Espagne (es-ES) sont proposées. Les voix « améliorées » de l'appareil sont plus naturelles ; on les télécharge dans les réglages d'accessibilité, contenu énoncé.", noVoice: "Aucune voix disponible sur cet appareil : les dictées sont désactivées.", test: "Tester",
@@ -1921,10 +2506,10 @@ const I18N = {
     hmTitle: "Dónde fallas", hmSub: "Parte de las respuestas con un error de cada categoría, por semana.", noErrorsYet: "Todavía no hay errores clasificados.",
     deltaTitle: "Qué ha cambiado", deltaSub: "Últimas 4 semanas frente a las 4 anteriores.", better: "Mejora", worse: "Empeora",
     per100Title: "Errores por cada 100 palabras (redacciones)", writingTitle: "Notas de escritura", writingSub: "Evolución de las notas de cada redacción (sobre 5).",
-    topicTitle: "Aciertos por tema · {lv}", topicSub: "Últimos 28 días, del más flojo al más fuerte.", noAttempts: "Todavía no hay respuestas en este nivel.",
+    topicTitle: "Dominio por tema · {lv}", topicSub: "Un tema queda dominado tras 12 respuestas al 80 %, cada punto acertado en dos días distintos y, después, una prueba sorpresa de 6 preguntas nuevas. Un error en ese punto, aunque sea en otro ejercicio, lo reabre.", ms_st_training: "En curso", ms_st_exam: "Prueba pendiente", ms_st_mastered: "Dominado", ms_st_reopened: "Reabierto", msFresh: "Todavía sin empezar", msProg: "{n}/{need} respuestas · {s}/{t} puntos · {acc} %", msReopenProg: "{n}/{need} aciertos desde el error", msExt: "{n} error(es) fuera del tema", ms_pass: "Prueba superada: «{topic}» está dominado.", ms_fail: "Prueba no superada: «{topic}». Seguimos practicando.", ms_reopen: "«{topic}» se ha reabierto: un error en ese punto.", ms_back: "«{topic}» vuelve a estar dominado.", noAttempts: "Todavía no hay respuestas en este nivel.",
     timeTitle: "Tiempo por tipo de pregunta", timeSub: "Tiempo medio para responder, sin la espera de la corrección.", blockAvg: "Bloque medio: {t} (en {n} bloques).",
     setTitle: "Ajustes", levels: "Niveles", since: "desde el {d}", change: "Cambiar", confirm: "Confirmar el cambio",
-    levelRule: "Para subir de nivel: al menos 28 días en el nivel, 85 % de aciertos en los últimos 28 días, y cada tema del nivel con un 80 % o más y al menos 5 respuestas.",
+    levelRule: "Para subir de nivel: al menos 28 días en el nivel, 85 % de aciertos en los últimos 28 días y todos los temas del nivel dominados (12 respuestas al 80 %, cada punto acertado en dos días distintos, prueba sorpresa superada y ningún tema reabierto).",
     levelChanged: "{lang}: nivel {lv}.",
     blockSize: "Tamaño de los bloques", blockAvgWait: "Sugerencia de tamaño dentro de {n} bloques.", suggest: "Sugerencia: {n} preguntas por bloque.", accept: "Pasar a {n}",
     voices: "Voces de los dictados", voicesNote: "Solo se ofrecen voces de Francia (fr-FR) y de España (es-ES). Las voces «mejoradas» del dispositivo suenan más naturales; se descargan en los ajustes de accesibilidad, contenido leído.", noVoice: "No hay ninguna voz disponible en este dispositivo: los dictados están desactivados.", test: "Probar",
@@ -1952,7 +2537,8 @@ function buildSeeds() {
     for (const [t, ty, p, a, x] of S) {
       n[t] = (n[t] || 0) + 1;
       const lv = TOPIC[t].lv === "*" ? "A2" : TOPIC[t].lv;
-      out.push({ id: `${t}-${n[t]}`, l: L, lv, t, ty, p, a, o: x.o || null, i: x.i || null, c: x.c, src: "seed" });
+      const tag = x.s != null ? x.s : (SUBTAG[t] || [])[n[t] - 1];
+      out.push({ id: `${t}-${n[t]}`, l: L, lv, t, ty, p, a, o: x.o || null, i: x.i || null, c: x.c, src: "seed", s: tag == null ? null : [].concat(tag) });
     }
   }
   return out;
@@ -2020,7 +2606,7 @@ async function loadAll() {
 function allQuestions(L) {
   const st = APP.st[L];
   const disc = new Set(st.discarded || []);
-  return [...SEEDS.filter(q => q.l === L), ...APP.gq.filter(q => q.l === L)].filter(q => !disc.has(q.id) && !q.disc);
+  return [...SEEDS.filter(q => q.l === L), ...APP.gq.filter(q => q.l === L)].filter(q => !disc.has(q.id) && !q.disc && q.src !== "prova");
 }
 function qById(id) { return SEEDS.find(q => q.id === id) || APP.gq.find(q => q.id === id) || null; }
 function attemptedIds(L) {
@@ -2131,14 +2717,114 @@ function catErrorRate(L, cat) {
   if (att.length < 5) return 0;
   return att.filter(a => (a.errors || []).some(e => e.cat === cat) || a.score === 0).length / att.length;
 }
+// ---------- domínio por tema ----------
+// Treino → (critério atingido) → prova surpresa de 6 questões novas → dominado. Um erro depois disso reabre o tema.
+const MASTER = { minN: 12, minAcc: 0.8, subDays: 2, reopenN: 4, reopenDays: 2, examN: 6, examDelay: 2 };
+const attOk = a => a.score >= 1 && a.targetOk !== false;
+// A questão faz parte de uma prova pendente?
+function examOf(L, qid) { const e = Object.entries(APP.st[L].tm || {}).find(([, r]) => r.st === "exam" && r.exam && r.exam.qids.includes(qid)); return e ? e[0] : null; }
+function attSubs(a) { const q = qById(a.qid); return (q && q.s) || a.sub || []; }
+function tmRec(L, id) { const st = APP.st[L]; st.tm = st.tm || {}; return st.tm[id] || (st.tm[id] = { st: "training" }); }
+// Erros que o corretor atribuiu a este tema em questões de outro tema ou em redações
+function externalErrors(L, id) {
+  const out = [];
+  for (const a of APP.attempts) if (a.lang === L && a.topic !== id) for (const e of a.errors || []) if (e.topic === id) out.push({ ts: a.ts, date: a.date, ok: false, ext: true });
+  for (const es of APP.essays) if (es.lang === L) for (const c of [es.corr, es.rcorr]) if (c) for (const e of c.errors || []) if (e.topic === id) out.push({ ts: es.doneTs || es.ts, date: es.date, ok: false, ext: true });
+  return out;
+}
+function topicMastery(L, id) {
+  const rec = tmRec(L, id), subsN = (SUBS[id] || []).length;
+  const since = rec.failedTs || 0, from28 = addDays(today(), -27);
+  const all = APP.attempts.filter(a => a.lang === L && a.topic === id && a.score != null && a.ts > since);
+  const recent = all.filter(a => a.date >= from28);
+  const acc = recent.length ? recent.reduce((x, a) => x + a.score, 0) / (2 * recent.length) : 0;
+  const subDays = Array.from({ length: subsN }, () => new Set());
+  for (const a of all) if (attOk(a)) for (const k of attSubs(a)) if (subDays[k]) subDays[k].add(a.date);
+  const subsOk = subDays.filter(d => d.size >= MASTER.subDays).length;
+  const ext = externalErrors(L, id);
+  const events = [...APP.attempts.filter(a => a.lang === L && a.topic === id && a.score != null).map(a => ({ ts: a.ts, date: a.date, ok: attOk(a) })), ...ext].sort((a, b) => a.ts - b.ts);
+  const last = events[events.length - 1];
+  const lastOk = !last || last.ok;
+  const criteria = recent.length >= MASTER.minN && acc >= MASTER.minAcc && subsOk === subsN && lastOk;
+  // reabertura: acertos depois do último erro
+  let reopen = null;
+  if (rec.st === "reopened") {
+    const lastFail = [...events].reverse().find(e => !e.ok);
+    const after = events.filter(e => e.ok && (!lastFail || e.ts > lastFail.ts));
+    reopen = { n: after.length, days: new Set(after.map(e => e.date)).size };
+  }
+  const ext28 = ext.filter(e => e.date >= from28).length;
+  return { id, state: rec.st, n: recent.length, acc, subsOk, subsN, lastOk, criteria, reopen, ext28, rec };
+}
+// Atualiza o estado do tema; devolve um evento ("exam", "pass", "fail", "reopen", "back") quando algo muda
+function updateTopic(L, id) {
+  if (!TOPIC[id] || TOPIC[id].l !== L || !SUBS[id]) return null;
+  const m = topicMastery(L, id), rec = m.rec, st = APP.st[L];
+  let ev = null;
+  if (rec.st === "exam" && rec.exam && rec.exam.qids && rec.exam.qids.length) {
+    const atts = rec.exam.qids.map(q => APP.attempts.find(a => a.qid === q && a.lang === L && a.exam === id && a.ts >= rec.exam.created)).filter(Boolean);
+    if (atts.length >= rec.exam.qids.length) {
+      const good = atts.filter(a => a.score === 2).length;
+      if (good >= rec.exam.qids.length - 1) { rec.st = "mastered"; rec.masteredTs = Date.now(); rec.exam = null; ev = "pass"; }
+      else { rec.st = "training"; rec.failedTs = Date.now(); rec.exam = null; ev = "fail"; }
+    }
+  } else if (rec.st === "mastered") {
+    if (!m.lastOk) { rec.st = "reopened"; rec.reopenTs = Date.now(); st.boost = st.boost || {}; st.boost[id] = st.session + 3; ev = "reopen"; }
+  } else if (rec.st === "reopened") {
+    const r = topicMastery(L, id).reopen;
+    if (r && r.n >= MASTER.reopenN && r.days >= MASTER.reopenDays) { rec.st = "mastered"; rec.masteredTs = Date.now(); ev = "back"; }
+  } else if (rec.st !== "exam" && m.criteria) {
+    rec.st = "exam"; rec.exam = { due: (st.session || 0) + MASTER.examDelay, qids: [], created: Date.now() }; ev = "exam";
+  }
+  if (ev) saveState(L);
+  if (rec.st === "exam" && rec.exam && !rec.exam.qids.length) ensureExam(L, id);
+  return ev;
+}
+// Erro fora do tema: o tema certo ganha prioridade nos próximos blocos
+function flagExternal(L, errors, ownTopic) {
+  const st = APP.st[L], ids = [...new Set((errors || []).map(e => e.topic).filter(t => t && t !== ownTopic && TOPIC[t] && TOPIC[t].l === L))];
+  if (!ids.length) return [];
+  st.boost = st.boost || {};
+  for (const id of ids) st.boost[id] = Math.max(st.boost[id] || 0, (st.session || 0) + 3);
+  saveState(L);
+  return ids.map(id => [id, updateTopic(L, id)]).filter(x => x[1]);
+}
+// Monta a prova: 6 questões novas geradas na hora, cobrindo todos os subpontos; sem Claude, usa questões do banco não vistas há 14 dias
+const examBusy = {};
+async function ensureExam(L, id) {
+  const key = L + id; if (examBusy[key]) return; examBusy[key] = true;
+  try {
+    const rec = tmRec(L, id); if (!rec.exam || rec.exam.qids.length) return;
+    let qs = [];
+    if (APP.sample) { try { qs = await generateExam(L, id); } catch (e) { console.warn("exam", e); } }
+    if (qs.length >= 4) { await storeQs(qs); rec.exam.qids = qs.map(q => q.id); }
+    else {
+      const recentIds = new Set(APP.attempts.filter(a => a.lang === L && a.date >= addDays(today(), -13)).map(a => a.qid));
+      const cand = shuffle(allQuestions(L).filter(q => q.t === id && !recentIds.has(q.id) && q.ty !== "mc"));
+      const pick = [], covered = new Set();
+      for (const q of cand) if (pick.length < MASTER.examN && (q.s || []).some(k => !covered.has(k))) { pick.push(q); (q.s || []).forEach(k => covered.add(k)); }
+      for (const q of cand) if (pick.length < MASTER.examN && !pick.includes(q)) pick.push(q);
+      if (pick.length < MASTER.examN) { // tudo visto há pouco: usa as vistas há mais tempo
+        const lastSeen = q => Math.max(0, ...APP.attempts.filter(a => a.qid === q.id).map(a => a.ts));
+        const rest = allQuestions(L).filter(q => q.t === id && q.ty !== "mc" && !pick.includes(q)).sort((a, b) => lastSeen(a) - lastSeen(b));
+        for (const q of rest) if (pick.length < MASTER.examN) pick.push(q);
+      }
+      rec.exam.qids = pick.map(q => q.id);
+    }
+    saveState(L);
+  } finally { examBusy[key] = false; }
+}
 function levelStatus(L) {
   const st = APP.st[L], lv = st.level, inLevel = daysBetween(st.levelSince, today());
   const att = recentAttempts(L, 28).filter(a => a.qlv === lv || (TOPIC[a.topic] && TOPIC[a.topic].lv === "*"));
   const acc = att.length ? att.reduce((s, a) => s + a.score, 0) / (2 * att.length) : 0;
   const topics = levelTopics(L, lv).map(tp => {
-    const ta = att.filter(a => a.topic === tp.id);
-    const tacc = ta.length ? ta.reduce((s, a) => s + a.score, 0) / (2 * ta.length) : 0;
-    return { id: tp.id, n: ta.length, acc: tacc, ok: ta.length >= 5 && tacc >= 0.8 };
+    if (!SUBS[tp.id]) {
+      const ta = att.filter(a => a.topic === tp.id), tacc = ta.length ? ta.reduce((s, a) => s + a.score, 0) / (2 * ta.length) : 0;
+      return { id: tp.id, state: ta.length >= MASTER.minN && tacc >= MASTER.minAcc ? "mastered" : "training", n: ta.length, acc: tacc, subsOk: 0, subsN: 0, ok: ta.length >= MASTER.minN && tacc >= MASTER.minAcc, ext28: 0 };
+    }
+    const m = topicMastery(L, tp.id);
+    return { ...m, ok: m.state === "mastered" };
   });
   const next = LEVELS[LEVELS.indexOf(lv) + 1] || null;
   const ready = !!next && inLevel >= 28 && acc >= 0.85 && topics.every(x => x.ok);
@@ -2153,6 +2839,10 @@ function buildBlockItems(L) {
   const byId = Object.fromEntries(pool.map(q => [q.id, q]));
   const chosen = [], topicCount = {};
   const add = q => { chosen.push(q.id); topicCount[q.t] = (topicCount[q.t] || 0) + 1; };
+  // 0) prova de tema marcada (no máximo uma por bloco, sem aviso)
+  const examDone = (tid, r) => new Set(APP.attempts.filter(a => a.lang === L && a.exam === tid && a.ts >= r.exam.created).map(a => a.qid));
+  const examTopic = Object.entries(st.tm || {}).find(([tid, r]) => r.st === "exam" && r.exam && r.exam.qids.length && r.exam.due <= st.session && r.exam.qids.some(q => !examDone(tid, r).has(q)));
+  if (examTopic) { const done = examDone(examTopic[0], examTopic[1]); for (const id of examTopic[1].exam.qids) if (!done.has(id) && qById(id) && chosen.length < size) { chosen.push(id); topicCount[examTopic[0]] = 2; } }
   // 1) revisões vencidas (até 3)
   const due = Object.entries(st.srs || {})
     .filter(([id, e]) => !e.retired && e.due <= st.session && byId[id] && byId[id].src !== "texto")
@@ -2168,7 +2858,8 @@ function buildBlockItems(L) {
   const weight = tp => {
     const s = tstat[tp] || { n: 0, pts: 0 };
     const err = s.n ? 1 - s.pts / (2 * s.n) : 0.5;
-    return 1 + 3 * err + 2 / (1 + s.n) + (boosted.has(tp) ? 3 : 0);
+    const rs = ((st.tm || {})[tp] || {}).st;
+    return 1 + 3 * err + 2 / (1 + s.n) + (boosted.has(tp) || rs === "reopened" ? 3 : 0) - (rs === "mastered" ? 1 : 0);
   };
   const closedShare = () => chosen.filter(id => QTYPES[(byId[id] || qById(id)).ty].closed).length / Math.max(1, chosen.length);
   const pickFrom = cands => {
@@ -2275,6 +2966,14 @@ const TYPE_DESC = {
 };
 const LEARNER = (L, lv) => `The learner is a Brazilian Portuguese speaker studying ${LNAME[L]}; current CEFR level ${lv}. ${L === "fr" ? "He grew up speaking French orally, so he writes by ear: watch for phonetic spelling, silent agreements, homophones and accents." : "Portuguese makes him understand almost everything, so his production slides into 'portuñol': watch for Portuguese interference in vocabulary, structure and spelling. His keyboard has no ¿ or ¡: NEVER count a missing opening ¿ or ¡ as an error, and do not list it."}`;
 
+// Temas para atribuir cada erro (nível atual + transversais)
+function errTopics(L) { return levelTopics(L, APP.st[L].level).map(t => `${t.id} — ${t.n}`).join("\n"); }
+// Quantas questões do banco cobrem cada subponto (para o gerador priorizar os mais fracos)
+function subNeed(L, id) {
+  const c = (SUBS[id] || []).map(() => 0);
+  for (const q of allQuestions(L)) if (q.t === id) for (const k of q.s || []) if (c[k] != null) c[k]++;
+  return c.map((n, k) => `${k}:${n}`).join(", ");
+}
 function catList(L) { return Object.keys(CATS[L]).map(k => `${k} (${CATS[L][k]})`).join(", "); }
 function topicList(L, lv) {
   return TOPICS[L].filter(t => !lv || t.lv === lv || t.lv === "*").map(t => `${t.id} [${t.lv}] ${t.n}`).join("\n");
@@ -2290,11 +2989,12 @@ function cleanErrors(L, errs) {
     frag: String(pick(e, ["text", "trecho", "fragment"]) || ""),
     fix: String(pick(e, ["fix", "correcao", "correção", "correction", "corrected", "correcta"]) || ""),
     why: String(pick(e, ["why", "porque", "explanation"]) || ""), why_pt: String(pick(e, ["why_pt", "porque_pt"]) || ""),
-    pt: !!pick(e, ["pt_interference", "interferencia_pt"]), ortho: !!pick(e, ["spelling", "ortografia"])
+    pt: !!pick(e, ["pt_interference", "interferencia_pt"]), ortho: !!pick(e, ["spelling", "ortografia"]),
+    topic: TOPIC[pick(e, ["topic", "tema"])] && TOPIC[pick(e, ["topic", "tema"])].l === L ? pick(e, ["topic", "tema"]) : null
   })).filter(e => (e.frag || e.fix) && normTxt(e.frag) !== normTxt(e.fix));
 }
 const pick = (o, keys) => { for (const k of keys) if (o && o[k] != null && o[k] !== "") return o[k]; return null; };
-const ERR_SCHEMA = `{"category":"<one id>","text":"<exact substring of the learner text that is wrong>","fix":"<the corrected form of exactly that substring; never empty>","why":"<explanation in ${"{LOUT}"}>","why_pt":"<same in Portuguese>","pt_interference":true|false,"spelling":true|false}`;
+const ERR_SCHEMA = `{"category":"<one id>","text":"<exact substring of the learner text that is wrong>","fix":"<the corrected form of exactly that substring; never empty>","why":"<explanation in ${"{LOUT}"}>","why_pt":"<same in Portuguese>","pt_interference":true|false,"spelling":true|false,"topic":"<id of the grammar topic this error belongs to (often NOT the exercise's topic), from the topic list>"}`;
 
 // Correção de uma questão aberta (ou ditado)
 async function correctOpen(q, answer) {
@@ -2314,6 +3014,8 @@ Scoring:
 - nota 1: the target structure is correct but there is at least one other error (a wrong or missing accent counts).
 - nota 0: the target structure is wrong, missing, or the answer does not do the task.
 For each error: category must be one of these ids: ${catList(L)}.
+For each error, "topic" is the grammar topic it belongs to (if the error is about another point than the exercise, say which one), from:
+${errTopics(L)}
 "why" must be in ${LOUT[L]}, in short simple sentences a ${lv} learner understands; "why_pt" is the same explanation in Brazilian Portuguese.
 versao_corrigida: the learner's answer minimally corrected (keep his wording when it is valid).
 feedback: one sentence in ${LOUT[L]} at ${lv} level; feedback_pt: same in Portuguese.
@@ -2364,7 +3066,8 @@ Reference: ${q.a.join(" | ")}
 Learner answer: "${att.answer}"
 Previous correction: score ${att.score}/2, errors ${JSON.stringify((att.errors || []).map(e => ({ categoria: e.cat, trecho: e.frag, correcao: e.fix })))}
 Learner's argument: """${reason || "(none given)"}"""
-Return the final score and the errors that remain (same format, category from: ${Object.keys(CATS[L]).join(", ")}).
+Return the final score and the errors that remain (same format, category from: ${Object.keys(CATS[L]).join(", ")}; topic from:
+${errTopics(L)}).
 "justificativa" in ${LOUT[L]} at ${lv} level, "justificativa_pt" in Portuguese.
 Reply with only JSON: {"aceito":true|false,"nota":0|1|2,"erros":[${ERR_SCHEMA.replace("{LOUT}", LOUT[L])}],"justificativa":"","justificativa_pt":""}`, { cache: false });
   const errors = cleanErrors(L, r.erros).map(e => ({ ...e, cat: e.cat || q.c }));
@@ -2372,7 +3075,7 @@ Reply with only JSON: {"aceito":true|false,"nota":0|1|2,"erros":[${ERR_SCHEMA.re
 }
 
 // ---------- geração de questões ----------
-const GEN_ITEM = L => `{"tema":"<topic id>","tipo":"cloze|corr|lac|mc|trad|transf|erro|${L ? "dit|" : ""}mini","enunciado":"","instrucao":"","opcoes":[],"respostas":[""],"categoria":"<category id>"}`;
+const GEN_ITEM = L => `{"tema":"<topic id>","tipo":"cloze|corr|lac|mc|trad|transf|erro|${L ? "dit|" : ""}mini","enunciado":"","instrucao":"","opcoes":[],"respostas":[""],"categoria":"<category id>","sub":[<index(es) of the sub-point(s) of the topic this item trains>]}`;
 function validateGen(L, raw, fallbackTopic, src, lvOverride) {
   const items = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.questoes) ? raw.questoes : []);
   const out = [];
@@ -2391,7 +3094,8 @@ function validateGen(L, raw, fallbackTopic, src, lvOverride) {
     if (ty === "transf" && !String(it.instrucao || "").trim()) continue;
     const c = CATS[L][it.categoria] ? it.categoria : (Object.keys(CATS[L]).includes("conj") ? "conj" : Object.keys(CATS[L])[0]);
     const tlv = TOPIC[t].lv === "*" ? (lvOverride || APP.st[L].level) : TOPIC[t].lv;
-    out.push({ id: uid("q"), l: L, lv: tlv, t, ty, p, a, o, i: String(it.instrucao || "").trim() || null, c, src, created: Date.now() });
+    const nsub = (SUBS[t] || []).length, sub = [].concat(it.sub == null ? [] : it.sub).map(Number).filter(k => Number.isInteger(k) && k >= 0 && k < nsub);
+    out.push({ id: uid("q"), l: L, lv: tlv, t, ty, p, a, o, i: String(it.instrucao || "").trim() || null, c, src, created: Date.now(), s: sub.length ? sub : null });
   }
   return out;
 }
@@ -2405,7 +3109,7 @@ async function generateForTopic(L, topicId, n, note) {
   const recentErr = APP.attempts.filter(a => a.lang === L && a.topic === topicId && a.score < 2).slice(0, 6).map(a => a.answer);
   const raw = await ask(`Write ${n} new ${LNAME[L]} exercises for one topic, CEFR ${lv}.
 ${LEARNER(L, APP.st[L].level)}
-Topic: ${topicId} — ${tp.n}${SUBS[topicId] ? "\nSub-points the learner must master (cover them across the batch, giving priority to the ones least represented in the existing prompts below; each item should test one sub-point in depth, not just its surface): " + SUBS[topicId].join("; ") : ""}${note ? "\nContext: " + note : ""}
+Topic: ${topicId} — ${tp.n}${SUBS[topicId] ? "\nSub-points the learner must master (cover them across the batch, giving priority to the ones least represented in the bank: " + subNeed(L, topicId) + "; each item should test one sub-point in depth, not just its surface; put its index in \"sub\"): " + SUBS[topicId].map((x, k) => k + "=" + x).join("; ") : ""}${note ? "\nContext: " + note : ""}
 The learner already gets multiple choice right almost every time: make items that force PRODUCTION and make him think and fail. Mix: about 1/4 closed (cloze = a 2–4 sentence text with 3–4 blanks ___, base form in parentheses after each blank when needed, "respostas" = one entry per blank in order, alternatives inside an entry separated by |; lac = one blank ___; mc at most 1 per batch and only for a true minimal pair) and 3/4 open (corr = a natural sentence with 0 to 3 realistic Portuguese-speaker errors, about 1 in 5 fully correct, "respostas" = the correct sentence; trad = 1–2 linked Brazilian Portuguese sentences that combine the topic with a classic Portuguese trap; transf = a sentence plus an instruction that forces two changes at once (e.g. person AND tense); mini = a concrete situation in ${LOUT[L]} asking for 1–3 sentences with required words or structures — never ask the learner to recall his own life${hasVoice(L) ? "; dit = a natural sentence to dictate, built to trap silent spelling" : ""}).
 Prefer traps a Portuguese speaker falls into. NEVER add Portuguese words, glosses or translations in parentheses (that gives the answer away): the context of the sentence must be enough. The only allowed hint is the base form of a verb or word in the target language, e.g. (hacer, tú). Vary vocabulary; everyday adult contexts (work, travel, city, tech, history).
 Instructions and situations in ${LOUT[L]} (simple, ${lv}). "respostas" lists 1–3 correct answers. "categoria" is the error category the item targets, one of: ${Object.keys(CATS[L]).join(", ")}.
@@ -2446,6 +3150,21 @@ Topic ids allowed: ${levelTopics(L, lv).map(t => t.id).join(", ")}. "categoria" 
 Rules: no Portuguese hints in parentheses, the context must be enough; lac has one ___ blank; cloze has one respostas entry per ___; mc has 3 options with the answer among them; transf has an instruction; situations never ask him to recall his own life.
 Reply with only a JSON array of items like: ${GEN_ITEM(false)}`, { cache: false });
   return validateGen(L, raw, weakTopics[0] && weakTopics[0].id, "gen", lv);
+}
+
+// Prova de tema: 6 questões novas, uma por subponto (os mais fracos primeiro), só produção
+async function generateExam(L, topicId) {
+  const tp = TOPIC[topicId], lv = tp.lv === "*" ? APP.st[L].level : tp.lv, subs = SUBS[topicId] || [];
+  const existing = allQuestions(L).filter(q => q.t === topicId).map(q => q.p).slice(-60);
+  const raw = await ask(`Write a mastery test of ${MASTER.examN} NEW ${LNAME[L]} exercises, CEFR ${lv}, for one topic. The learner has trained this topic and must now prove he masters ALL of it without having seen these exact items.
+${LEARNER(L, APP.st[L].level)}
+Topic: ${topicId} — ${tp.n}
+Sub-points (cover every one at least once; "sub" = its index): ${subs.map((x, k) => k + "=" + x).join("; ")}
+Only production: corr (0–3 realistic errors, at most one item fully correct), trad (1–2 Brazilian Portuguese sentences with a classic trap), transf (two changes at once), cloze (3–4 blanks). No mc, no lac. No hints that give the answer, no Portuguese glosses. Difficulty: the hardest realistic A2 cases, not the textbook example.
+Instructions in ${LOUT[L]}. "categoria" from: ${Object.keys(CATS[L]).join(", ")}.
+Do not repeat these existing prompts: ${JSON.stringify(existing)}
+Reply with only a JSON array of items like: ${GEN_ITEM(false)} — "tema" is always "${topicId}".`, { cache: false });
+  return validateGen(L, raw, topicId, "prova", lv).filter(q => q.ty !== "mc" && q.ty !== "lac").slice(0, MASTER.examN).map(q => ({ ...q, exam: topicId }));
 }
 
 // Texto de segunda + questões sobre ele
@@ -2505,7 +3224,8 @@ Learner text:
 
 1) General writing skill (independent of language, scores 0–5): tarefa (covered every required point), organizacao (opening, development, closing; paragraphs with a clear role), desenvolvimento (ideas explained and supported, not just listed), coesao (sentences and paragraphs connected), clareza (understandable at first reading), adequacao (register and tone right for the format and reader).
 2) Language (0–5): gramatica, vocabulario, ortografia; nivel = CEFR level of the language shown (A1–C2).
-3) List EVERY language error with "trecho" an exact substring of the learner text (in order of appearance). category ids: ${catList(L)}.
+3) List EVERY language error with "text" an exact substring of the learner text (in order of appearance). category ids: ${catList(L)}. "topic" from:
+${errTopics(L)}
 4) comentario: 2–3 sentences on the STRUCTURE of the text (what to reorganise, connect or develop) in ${LOUT[L]} at ${lv} level; comentario_pt: the same in Brazilian Portuguese.
 5) questoes: for up to 6 of the most important errors, one new exercise that trains that point (not the same sentence). Topic id from:
 ${topicList(L)}
@@ -2532,7 +3252,8 @@ ${LEARNER(L, lv)}
 Original errors that had to be fixed: ${JSON.stringify(essay.corr.errors.map(e => ({ trecho: e.frag, correcao: e.fix, categoria: e.cat })))}
 Rewritten text:
 """${essay.rewrite}"""
-List EVERY error still present in the rewrite (old or new), "trecho" an exact substring. category ids: ${catList(L)}.
+List EVERY error still present in the rewrite (old or new), "text" an exact substring. category ids: ${catList(L)}. "topic" from:
+${errTopics(L)}
 comentario: one sentence in ${LOUT[L]} (${lv}); comentario_pt: same in Portuguese.
 Reply with only JSON: {"erros":[${ERR_SCHEMA.replace("{LOUT}", LOUT[L])}],"comentario":"","comentario_pt":""}`, { cache: false });
   const errors = cleanErrors(L, r.erros).map(e => ({ ...e, cat: e.cat || "synt" }));
@@ -2723,7 +3444,7 @@ function renderBlock() {
   h += `<div class="dots" aria-hidden="true">${dots}</div>`;
   if (b.kind === "texto" && b.text && q.src === "texto") h += `<article class="card"><p class="label">${t("readFirst")}</p><h2>${esc(b.text.title)}</h2><p style="white-space:pre-wrap">${esc(b.text.body)}</p></article>`;
   const tp = TOPIC[q.t];
-  h += `<section class="sheetp"><div class="meta"><span class="cat">${esc(tp.n)}</span><span class="cat">${anyLevel(q) ? APP.st[L].level : q.lv}</span>${q.src !== "seed" ? `<span class="cat">${t("src_" + q.src)}</span>` : ""}${APP.st[L].srs[q.id] && s.phase === "answer" ? `<span class="cat">${t("review")}</span>` : ""}</div>`;
+  h += `<section class="sheetp"><div class="meta"><span class="cat">${esc(tp.n)}</span><span class="cat">${anyLevel(q) ? APP.st[L].level : q.lv}</span>${q.src !== "seed" && q.src !== "prova" ? `<span class="cat">${t("src_" + q.src)}</span>` : ""}${APP.st[L].srs[q.id] && s.phase === "answer" ? `<span class="cat">${t("review")}</span>` : ""}</div>`;
   h += `<p class="qinstr">${esc(q.i || typeInstr(q))}</p>`;
   if (q.ty === "dit") {
     h += `<div class="listen"><button class="btn" data-act="listen" data-v="1" ${s.replays >= 3 || s.phase !== "answer" ? "disabled" : ""}>${t("listen")}</button><button class="btn" data-act="listen" data-v="0.7" ${s.replays >= 3 || s.phase !== "answer" ? "disabled" : ""}>${t("slower")}</button><span class="note mono">${s.replays}/3</span>${chosenVoice(L) ? `<span class="note">· ${esc(chosenVoice(L).name)}</span>` : ""}</div>${s.phase === "answer" ? `<div class="row"><button class="btn ghost small" data-act="badAudio">${t("badAudio")}</button></div>` : ""}`;
@@ -2946,11 +3667,24 @@ function viewProgress() {
   if (ess.length < 2) h += wait(2 - ess.length, t("essaysU"));
   else h += `<div class="bars">${W_KEYS.map(k => { const v = ess.map(e => e.corr.w[k]); return `<div class="bar-row"><span class="nm">${t("w_" + k)}</span>${spark(v)}<span class="v">${v[v.length - 1]}/5</span></div>`; }).join("")}${L_KEYS.map(k => { const v = ess.map(e => e.corr.l[k]); return `<div class="bar-row"><span class="nm">${t("l_" + k)}</span>${spark(v)}<span class="v">${v[v.length - 1]}/5</span></div>`; }).join("")}</div>`;
   h += `</section>`;
-  // acerto por tema
-  const ts = topicStats(L, 28), lt = levelTopics(L, APP.st[L].level).map(tp => ({ tp, s: ts[tp.id] })).filter(x => x.s);
-  h += `<section class="card"><h3>${t("topicTitle", { lv: APP.st[L].level })}</h3><p class="note">${t("topicSub")}</p>`;
-  h += lt.length ? `<div class="bars">${lt.map(x => ({ ...x, acc: x.s.pts / (2 * x.s.n) })).sort((a, b) => a.acc - b.acc).map(x => `<div class="bar-row"><span class="nm">${esc(x.tp.n)} <span class="note">(${x.s.n})</span></span><span class="tr"><i class="${x.acc < 0.6 ? "lo" : x.acc < 0.85 ? "mid" : ""}" style="width:${Math.round(x.acc * 100)}%"></i></span><span class="v">${Math.round(x.acc * 100)}%</span></div>`).join("")}</div>` : `<div class="empty">${t("noAttempts")}</div>`;
-  h += `</section>`;
+  // domínio por tema
+  {
+    const lsT = levelStatus(L).topics, order = { reopened: 0, exam: 1, training: 2, mastered: 3 };
+    const nm = lsT.filter(x => x.state === "mastered").length;
+    const row = x => {
+      const tp = TOPIC[x.id], pill = { training: "", exam: "warn", mastered: "ok", reopened: "pen" }[x.state] || "";
+      const prog = x.state === "reopened" && x.reopen ? t("msReopenProg", { n: x.reopen.n, need: MASTER.reopenN }) : x.state === "mastered" ? "" : t("msProg", { n: Math.min(x.n, MASTER.minN), need: MASTER.minN, s: x.subsOk, t: x.subsN, acc: Math.round(x.acc * 100) });
+      const w = x.state === "mastered" ? 100 : Math.round(100 * (Math.min(1, x.n / MASTER.minN) + (x.subsN ? x.subsOk / x.subsN : 1) + Math.min(1, x.acc / MASTER.minAcc)) / 3);
+      return `<div class="ms-row"><div class="ms-main"><span class="nm"${SUBS[x.id] ? ` title="${esc(SUBS[x.id].join(" · "))}"` : ""}>${esc(tp.n)}</span>${prog || x.ext28 ? `<span class="note">${prog}${x.ext28 ? `${prog ? " · " : ""}${t("msExt", { n: x.ext28 })}` : ""}</span>` : ""}<span class="tr"><i class="${x.state === "mastered" ? "" : x.state === "reopened" ? "lo" : "mid"}" style="width:${w}%"></i></span></div><span class="pill ${pill}">${t("ms_st_" + x.state)}</span></div>`;
+    };
+    const active = lsT.filter(x => x.state !== "mastered" && (x.n > 0 || x.state !== "training" || x.ext28)).sort((a, b) => (order[a.state] - order[b.state]) || (b.n - a.n));
+    const fresh = lsT.filter(x => x.state === "training" && !x.n && !x.ext28), done = lsT.filter(x => x.state === "mastered");
+    h += `<section class="card"><div class="row" style="justify-content:space-between"><h3>${t("topicTitle", { lv: APP.st[L].level })}</h3><span class="mono note">${nm}/${lsT.length}</span></div><p class="note">${t("topicSub")}</p>`;
+    h += active.length ? `<div class="ms-list">${active.map(row).join("")}</div>` : `<div class="empty">${t("noAttempts")}</div>`;
+    if (done.length) h += `<details><summary><b>${t("ms_st_mastered")}</b> <span class="note">(${done.length})</span></summary><div class="ms-list">${done.map(row).join("")}</div></details>`;
+    if (fresh.length) h += `<details><summary><b>${t("msFresh")}</b> <span class="note">(${fresh.length})</span></summary><p class="note">${fresh.map(x => esc(TOPIC[x.id].n)).join(" · ")}</p></details>`;
+    h += `</section>`;
+  }
   // tempo por tipo
   h += `<section class="card"><h3>${t("timeTitle")}</h3><p class="note">${t("timeSub")}</p>`;
   if (atts.length < 10) h += wait(10 - atts.length, t("answersU"));
@@ -3058,7 +3792,7 @@ async function submitAnswer() {
 function finalizeAttempt(q, answer, res, selfGraded) {
   const s = APP.screen, b = blk(), L = q.l;
   const att = { id: uid("a"), lang: L, qid: q.id, qlv: q.lv, topic: q.t, qcat: q.c, type: q.ty, src: q.src, ts: Date.now(), date: today(), blockId: b.id,
-    answer, blanks: q.ty === "cloze" ? (s.blanks || []) : undefined, score: res.score, targetOk: res.targetOk, errors: res.errors || [], ptInterf: (res.errors || []).some(e => e.pt), orthoErr: (res.errors || []).some(e => e.ortho),
+    answer, blanks: q.ty === "cloze" ? (s.blanks || []) : undefined, sub: q.s || null, exam: examOf(L, q.id), score: res.score, targetOk: res.targetOk, errors: res.errors || [], ptInterf: (res.errors || []).some(e => e.pt), orthoErr: (res.errors || []).some(e => e.ortho),
     corrected: res.corrected || "", feedback: res.feedback || "", feedback_pt: res.feedback_pt || "", answerMs: s.answerMs || 0, replays: s.replays || 0, doubts: [], selfGraded,
     srsBefore: APP.st[L].srs[q.id] ? { ...APP.st[L].srs[q.id] } : null };
   const c = classify(att, q); att.dif = c.dif; att.difWhy = c.why;
@@ -3066,12 +3800,22 @@ function finalizeAttempt(q, answer, res, selfGraded) {
   APP.attempts.unshift(att); save("attempts", att.id, att);
   b.attempts.push(att.id); save("blocks", b.id, b);
   s.phase = "result"; s.attId = att.id; render();
+  masteryAfter(att);
+}
+// Depois de cada resposta: estado do tema da questão e dos temas dos erros "fora do tema"
+function masteryAfter(att) {
+  const evs = [];
+  const own = updateTopic(att.lang, att.topic); if (own) evs.push([att.topic, own]);
+  if (att.exam && att.exam !== att.topic) { const ex = updateTopic(att.lang, att.exam); if (ex) evs.push([att.exam, ex]); }
+  evs.push(...flagExternal(att.lang, att.errors, att.topic));
+  for (const [id, ev] of evs) if (ev !== "exam") toast(t("ms_" + ev, { topic: TOPIC[id].n }));
 }
 function reclassify(att) {
   const q = qById(att.qid); if (!q) return;
   const c = classify(att, q);
   att.dif = c.dif; att.difWhy = c.why;
   applySrs(att.lang, q.id, c.dif, att.srsBefore); saveState(att.lang); save("attempts", att.id, att);
+  masteryAfter(att);
 }
 function nextQuestion() {
   const s = APP.screen, b = blk();
@@ -3117,6 +3861,7 @@ async function essaySubmit() {
   try {
     const { corr, qs } = await correctEssay(e.lang, e);
     e.corr = corr; e.stage = "review"; save("essays", e.id, e);
+    flagExternal(e.lang, corr.errors, null);
     if (qs.length) storeQs(qs);
   } catch (err) { console.warn(err); e.stage = "write"; toast(t("corrFail")); }
   s.segStart = Date.now(); if (APP.screen === s) render();
@@ -3128,6 +3873,7 @@ async function rewriteSubmit() {
   closeSegment(); e.stage = "correcting2"; save("essays", e.id, e); render();
   try {
     e.rcorr = await correctRewrite(e.lang, e); e.stage = "done"; e.status = "done"; e.doneTs = Date.now(); save("essays", e.id, e);
+    flagExternal(e.lang, e.rcorr.errors, null);
     syncDayFlags(today());
   } catch (err) { console.warn(err); e.stage = "rewrite"; toast(t("corrFail")); }
   s.segStart = null; if (APP.screen === s) render();
@@ -3303,6 +4049,7 @@ async function boot() {
   // redações abertas de dias anteriores não acumulam
   for (const e of APP.essays) if (e.status === "open" && e.date !== today()) { e.status = "dropped"; save("essays", e.id, e); }
   APP.status = "ready"; render();
+  for (const L of LANG_LIST) for (const tp of levelTopics(L, APP.st[L].level)) updateTopic(L, tp.id);
 }
 boot();
 

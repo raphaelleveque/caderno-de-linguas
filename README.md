@@ -12,8 +12,9 @@ A daily study planner for French and Spanish (CEFR A2 → C1), built as a Claude
 - **Dictation** using native device voices only (`fr-FR` and `es-ES`; multilingual and novelty voices are filtered out).
 - **Essays** on weekends: plan → write → examiner correction (6 general writing scores + language scores + errors per 100 words) → mandatory rewrite from memory → re-correction. Errors turn into new questions.
 - **Class log**: note the class topic and the teacher's corrections; the app maps the topic to the syllabus and only generates new questions if there are fewer than 8 unseen ones.
-- **Unlimited questions**: a hand-written A2 seed bank (≈230 French, ≈200 Spanish) plus automatic generation when a topic runs low, and a "generate from my history" button.
-- **Level-up rule**: at least 28 days at the level, ≥85 % accuracy over the last 28 days, and every topic of the level at ≥80 % with at least 5 attempts.
+- **Unlimited questions**: a hand-written A2 seed bank (≈720 French and ≈690 Spanish items over 45 + 43 topics, ~16 per topic, each tagged with the sub-point it trains), plus automatic generation when a topic runs low (prioritising its least-covered sub-points) and a "generate from my history" button.
+- **Topic mastery**: a topic is mastered after ≥12 answers at ≥80 % in the last 28 days, every sub-point answered correctly on two different days, the last contact correct, and then a surprise 6-question test of brand-new items (5/6 to pass). An error on that topic anywhere else — another exercise or an essay, as attributed by the corrector — reopens it (4 correct answers over 2 days close it again).
+- **Level-up rule**: at least 28 days at the level, ≥85 % accuracy over the last 28 days, and every topic of the level mastered.
 - **Progress**: last-7-days summary, error heatmap by category and week, what improved vs. got worse, essay trends, accuracy per topic, time per question type, streak.
 - **The whole interface switches to the language of the day.**
 
@@ -82,10 +83,10 @@ Pick the voice in **Settings → Dictation voices** and press **Test**. If the d
 |---|---|
 | Weekly schedule (which days have classes, long days, essays) | `template()` in `core.js` |
 | Topics per level, error categories, essay formats and tasks | `topics.js` |
-| Seed questions | `seed_fr.js`, `seed_es.js` (`[topic, type, prompt, answers, {c: category, o: options, i: instruction}]`) |
+| Seed questions | `seed_fr.js`, `seed_es.js` (`[topic, type, prompt, answers, {c: category, o: options, i: instruction, s: sub-point}]`), sub-point tags of older items in `subtags.js`, sub-points per topic in `SUBS` (`topics.js`) |
 | Correction and generation prompts, learner profile | `claude.js` (`LEARNER`, `correctOpen`, `correctEssay`, `generate*`) |
 | Interface texts | `i18n.js` |
-| Spaced-repetition intervals, level-up rule, block size | `core.js` (`applySrs`, `levelStatus`, `buildBlockItems`) |
+| Spaced-repetition intervals, mastery and level-up rules, block size | `core.js` (`applySrs`, `MASTER`, `topicMastery`, `updateTopic`, `levelStatus`, `buildBlockItems`) |
 | Look and feel | `style.css` |
 
 After any change, run `python3 build.py` and republish `caderno.html` to the same artifact. Stored data is kept across republishes.
@@ -95,6 +96,7 @@ After any change, run `python3 build.py` and republish `caderno.html` to the sam
 | File | Contents |
 |---|---|
 | `topics.js` | Topics per level (A2–C1), error categories, question types, essay formats and A2 essay tasks |
+| `subtags.js` | Sub-point tag of each older A2 seed item |
 | `seed_fr.js`, `seed_es.js` | Hand-written A2 question bank |
 | `i18n.js` | Interface texts in French and Spanish |
 | `core.js` | Calendar, block assembly, spaced repetition, local grading, statistics |

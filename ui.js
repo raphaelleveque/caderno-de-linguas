@@ -182,7 +182,7 @@ function renderBlock() {
   h += `<div class="dots" aria-hidden="true">${dots}</div>`;
   if (b.kind === "texto" && b.text && q.src === "texto") h += `<article class="card"><p class="label">${t("readFirst")}</p><h2>${esc(b.text.title)}</h2><p style="white-space:pre-wrap">${esc(b.text.body)}</p></article>`;
   const tp = TOPIC[q.t];
-  h += `<section class="sheetp"><div class="meta"><span class="cat">${esc(tp.n)}</span><span class="cat">${anyLevel(q) ? APP.st[L].level : q.lv}</span>${q.src !== "seed" ? `<span class="cat">${t("src_" + q.src)}</span>` : ""}${APP.st[L].srs[q.id] && s.phase === "answer" ? `<span class="cat">${t("review")}</span>` : ""}</div>`;
+  h += `<section class="sheetp"><div class="meta"><span class="cat">${esc(tp.n)}</span><span class="cat">${anyLevel(q) ? APP.st[L].level : q.lv}</span>${q.src !== "seed" && q.src !== "prova" ? `<span class="cat">${t("src_" + q.src)}</span>` : ""}${APP.st[L].srs[q.id] && s.phase === "answer" ? `<span class="cat">${t("review")}</span>` : ""}</div>`;
   h += `<p class="qinstr">${esc(q.i || typeInstr(q))}</p>`;
   if (q.ty === "dit") {
     h += `<div class="listen"><button class="btn" data-act="listen" data-v="1" ${s.replays >= 3 || s.phase !== "answer" ? "disabled" : ""}>${t("listen")}</button><button class="btn" data-act="listen" data-v="0.7" ${s.replays >= 3 || s.phase !== "answer" ? "disabled" : ""}>${t("slower")}</button><span class="note mono">${s.replays}/3</span>${chosenVoice(L) ? `<span class="note">· ${esc(chosenVoice(L).name)}</span>` : ""}</div>${s.phase === "answer" ? `<div class="row"><button class="btn ghost small" data-act="badAudio">${t("badAudio")}</button></div>` : ""}`;
@@ -405,11 +405,24 @@ function viewProgress() {
   if (ess.length < 2) h += wait(2 - ess.length, t("essaysU"));
   else h += `<div class="bars">${W_KEYS.map(k => { const v = ess.map(e => e.corr.w[k]); return `<div class="bar-row"><span class="nm">${t("w_" + k)}</span>${spark(v)}<span class="v">${v[v.length - 1]}/5</span></div>`; }).join("")}${L_KEYS.map(k => { const v = ess.map(e => e.corr.l[k]); return `<div class="bar-row"><span class="nm">${t("l_" + k)}</span>${spark(v)}<span class="v">${v[v.length - 1]}/5</span></div>`; }).join("")}</div>`;
   h += `</section>`;
-  // acerto por tema
-  const ts = topicStats(L, 28), lt = levelTopics(L, APP.st[L].level).map(tp => ({ tp, s: ts[tp.id] })).filter(x => x.s);
-  h += `<section class="card"><h3>${t("topicTitle", { lv: APP.st[L].level })}</h3><p class="note">${t("topicSub")}</p>`;
-  h += lt.length ? `<div class="bars">${lt.map(x => ({ ...x, acc: x.s.pts / (2 * x.s.n) })).sort((a, b) => a.acc - b.acc).map(x => `<div class="bar-row"><span class="nm">${esc(x.tp.n)} <span class="note">(${x.s.n})</span></span><span class="tr"><i class="${x.acc < 0.6 ? "lo" : x.acc < 0.85 ? "mid" : ""}" style="width:${Math.round(x.acc * 100)}%"></i></span><span class="v">${Math.round(x.acc * 100)}%</span></div>`).join("")}</div>` : `<div class="empty">${t("noAttempts")}</div>`;
-  h += `</section>`;
+  // domínio por tema
+  {
+    const lsT = levelStatus(L).topics, order = { reopened: 0, exam: 1, training: 2, mastered: 3 };
+    const nm = lsT.filter(x => x.state === "mastered").length;
+    const row = x => {
+      const tp = TOPIC[x.id], pill = { training: "", exam: "warn", mastered: "ok", reopened: "pen" }[x.state] || "";
+      const prog = x.state === "reopened" && x.reopen ? t("msReopenProg", { n: x.reopen.n, need: MASTER.reopenN }) : x.state === "mastered" ? "" : t("msProg", { n: Math.min(x.n, MASTER.minN), need: MASTER.minN, s: x.subsOk, t: x.subsN, acc: Math.round(x.acc * 100) });
+      const w = x.state === "mastered" ? 100 : Math.round(100 * (Math.min(1, x.n / MASTER.minN) + (x.subsN ? x.subsOk / x.subsN : 1) + Math.min(1, x.acc / MASTER.minAcc)) / 3);
+      return `<div class="ms-row"><div class="ms-main"><span class="nm"${SUBS[x.id] ? ` title="${esc(SUBS[x.id].join(" · "))}"` : ""}>${esc(tp.n)}</span>${prog || x.ext28 ? `<span class="note">${prog}${x.ext28 ? `${prog ? " · " : ""}${t("msExt", { n: x.ext28 })}` : ""}</span>` : ""}<span class="tr"><i class="${x.state === "mastered" ? "" : x.state === "reopened" ? "lo" : "mid"}" style="width:${w}%"></i></span></div><span class="pill ${pill}">${t("ms_st_" + x.state)}</span></div>`;
+    };
+    const active = lsT.filter(x => x.state !== "mastered" && (x.n > 0 || x.state !== "training" || x.ext28)).sort((a, b) => (order[a.state] - order[b.state]) || (b.n - a.n));
+    const fresh = lsT.filter(x => x.state === "training" && !x.n && !x.ext28), done = lsT.filter(x => x.state === "mastered");
+    h += `<section class="card"><div class="row" style="justify-content:space-between"><h3>${t("topicTitle", { lv: APP.st[L].level })}</h3><span class="mono note">${nm}/${lsT.length}</span></div><p class="note">${t("topicSub")}</p>`;
+    h += active.length ? `<div class="ms-list">${active.map(row).join("")}</div>` : `<div class="empty">${t("noAttempts")}</div>`;
+    if (done.length) h += `<details><summary><b>${t("ms_st_mastered")}</b> <span class="note">(${done.length})</span></summary><div class="ms-list">${done.map(row).join("")}</div></details>`;
+    if (fresh.length) h += `<details><summary><b>${t("msFresh")}</b> <span class="note">(${fresh.length})</span></summary><p class="note">${fresh.map(x => esc(TOPIC[x.id].n)).join(" · ")}</p></details>`;
+    h += `</section>`;
+  }
   // tempo por tipo
   h += `<section class="card"><h3>${t("timeTitle")}</h3><p class="note">${t("timeSub")}</p>`;
   if (atts.length < 10) h += wait(10 - atts.length, t("answersU"));
@@ -517,7 +530,7 @@ async function submitAnswer() {
 function finalizeAttempt(q, answer, res, selfGraded) {
   const s = APP.screen, b = blk(), L = q.l;
   const att = { id: uid("a"), lang: L, qid: q.id, qlv: q.lv, topic: q.t, qcat: q.c, type: q.ty, src: q.src, ts: Date.now(), date: today(), blockId: b.id,
-    answer, blanks: q.ty === "cloze" ? (s.blanks || []) : undefined, score: res.score, targetOk: res.targetOk, errors: res.errors || [], ptInterf: (res.errors || []).some(e => e.pt), orthoErr: (res.errors || []).some(e => e.ortho),
+    answer, blanks: q.ty === "cloze" ? (s.blanks || []) : undefined, sub: q.s || null, exam: examOf(L, q.id), score: res.score, targetOk: res.targetOk, errors: res.errors || [], ptInterf: (res.errors || []).some(e => e.pt), orthoErr: (res.errors || []).some(e => e.ortho),
     corrected: res.corrected || "", feedback: res.feedback || "", feedback_pt: res.feedback_pt || "", answerMs: s.answerMs || 0, replays: s.replays || 0, doubts: [], selfGraded,
     srsBefore: APP.st[L].srs[q.id] ? { ...APP.st[L].srs[q.id] } : null };
   const c = classify(att, q); att.dif = c.dif; att.difWhy = c.why;
@@ -525,12 +538,22 @@ function finalizeAttempt(q, answer, res, selfGraded) {
   APP.attempts.unshift(att); save("attempts", att.id, att);
   b.attempts.push(att.id); save("blocks", b.id, b);
   s.phase = "result"; s.attId = att.id; render();
+  masteryAfter(att);
+}
+// Depois de cada resposta: estado do tema da questão e dos temas dos erros "fora do tema"
+function masteryAfter(att) {
+  const evs = [];
+  const own = updateTopic(att.lang, att.topic); if (own) evs.push([att.topic, own]);
+  if (att.exam && att.exam !== att.topic) { const ex = updateTopic(att.lang, att.exam); if (ex) evs.push([att.exam, ex]); }
+  evs.push(...flagExternal(att.lang, att.errors, att.topic));
+  for (const [id, ev] of evs) if (ev !== "exam") toast(t("ms_" + ev, { topic: TOPIC[id].n }));
 }
 function reclassify(att) {
   const q = qById(att.qid); if (!q) return;
   const c = classify(att, q);
   att.dif = c.dif; att.difWhy = c.why;
   applySrs(att.lang, q.id, c.dif, att.srsBefore); saveState(att.lang); save("attempts", att.id, att);
+  masteryAfter(att);
 }
 function nextQuestion() {
   const s = APP.screen, b = blk();
@@ -576,6 +599,7 @@ async function essaySubmit() {
   try {
     const { corr, qs } = await correctEssay(e.lang, e);
     e.corr = corr; e.stage = "review"; save("essays", e.id, e);
+    flagExternal(e.lang, corr.errors, null);
     if (qs.length) storeQs(qs);
   } catch (err) { console.warn(err); e.stage = "write"; toast(t("corrFail")); }
   s.segStart = Date.now(); if (APP.screen === s) render();
@@ -587,6 +611,7 @@ async function rewriteSubmit() {
   closeSegment(); e.stage = "correcting2"; save("essays", e.id, e); render();
   try {
     e.rcorr = await correctRewrite(e.lang, e); e.stage = "done"; e.status = "done"; e.doneTs = Date.now(); save("essays", e.id, e);
+    flagExternal(e.lang, e.rcorr.errors, null);
     syncDayFlags(today());
   } catch (err) { console.warn(err); e.stage = "rewrite"; toast(t("corrFail")); }
   s.segStart = null; if (APP.screen === s) render();
@@ -762,5 +787,6 @@ async function boot() {
   // redações abertas de dias anteriores não acumulam
   for (const e of APP.essays) if (e.status === "open" && e.date !== today()) { e.status = "dropped"; save("essays", e.id, e); }
   APP.status = "ready"; render();
+  for (const L of LANG_LIST) for (const tp of levelTopics(L, APP.st[L].level)) updateTopic(L, tp.id);
 }
 boot();

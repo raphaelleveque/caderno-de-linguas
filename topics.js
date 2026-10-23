@@ -311,7 +311,7 @@ const ESSAY_TASKS = {
 // Subpontos de cada tema A2: o gerador cobre todos (priorizando os menos treinados) e o corretor sabe o que o tema exige.
 const SUBS = {
   fr_preg: ["-er, -ir (-iss-), -re au présent", "manger/nous mangeons, commencer/nous commençons", "acheter, préférer, appeler, jeter (accent ou consonne double)", "terminaisons muettes : -e, -es, -ent"],
-  fr_pres: ["être, avoir, aller, faire", "pouvoir, vouloir, devoir", "prendre, venir, mettre", "boire, voir, dire, lire, écrire"],
+  fr_pres: ["être, avoir, aller, faire", "pouvoir, vouloir, devoir, savoir", "prendre, venir, mettre", "boire, voir, dire, lire, écrire"],
   fr_pc: ["auxiliaire avoir ou être", "verbes de mouvement avec être", "accord du participe avec être", "verbes pronominaux au passé composé"],
   fr_imp: ["formation (base de nous + -ais)", "être → étais", "manger → mangeais, commencer → commençais", "habitude et description au passé"],
   fr_fproche: ["aller + infinitif", "négation : je ne vais pas…", "pronom : je vais le faire"],
@@ -329,7 +329,7 @@ const SUBS = {
   fr_cest: ["c'est + nom, il/elle est + profession ou adjectif", "c'est + adjectif (commentaire général)", "il y a"],
   fr_quique: ["qui sujet", "que (qu') complément", "qui ne s'élide jamais"],
   fr_adv: ["bien/bon, mal/mauvais", "très/beaucoup", "adverbes en -ment"],
-  fr_venirde: ["venir de + infinitif", "venir de au présent et à l'imparfait"],
+  fr_venirde: ["venir de + infinitif (conjugaison de venir)", "venir de ou passé composé (action très récente)"],
   fr_tout: ["tout, toute, tous, toutes + article", "tous les jours, toute la journée"],
   fr_toniq: ["moi, toi, lui, elle, nous, vous, eux, elles", "après préposition (avec lui, chez moi)", "pour insister (moi, je…)", "on = nous (accord du participe)"],
   fr_indef: ["quelqu'un, quelque chose", "chaque, plusieurs, quelques", "personne, rien"],
@@ -352,7 +352,7 @@ const SUBS = {
   fr_prept: ["il y a (passé)", "depuis (durée qui continue)", "pendant (durée finie)", "dans (futur)", "en (durée d'une action, année, mois)", "pour (durée prévue)"],
   fr_geo: ["à + ville", "en / au / aux + pays", "venir de / du / des", "chez + personne", "en voiture, en bus, à pied, à vélo", "sur, sous, dans, devant, en face de, près de"],
   fr_quel: ["quel, quelle, quels, quelles", "inversion (parle-t-il, a-t-elle)", "combien de, depuis quand, à quelle heure", "qu'est-ce que / que"],
-  fr_genre: ["-age masculin (le voyage, le message, le paysage)", "noms féminins en français et masculins en portugais (la mer, la fin, la valeur, la chaleur, la dent, la planète, la vidéo, l'odeur, l'équipe)", "noms masculins en français et féminins en portugais (le lait, le garage, l'arbre)"],
+  fr_genre: ["-age masculin (le voyage, le message, le paysage)", "noms féminins en français et masculins en portugais (la mer, la fin, la valeur, la chaleur, la dent, la planète, la vidéo, l'odeur, l'équipe)", "noms masculins en français et féminins en portugais (l'arbre, le nuage, le personnage, le pourcentage, le garage)"],
   es_pres: ["e>ie, o>ue, e>i", "yo irregular (hago, pongo, salgo, tengo, digo)", "ser, ir, estar"],
   es_ser: ["ser: identidad, origen, profesión, hora, lugar de un evento", "estar: ubicación, estado", "hay (existencia) o está (ubicación de algo conocido)", "había (nunca habían) en pasado"],
   es_gustar: ["me gusta / me gustan", "a mí me, a ellos les", "doler, encantar, interesar, parecer, quedar, apetecer", "a mí también / tampoco / sí / no"],

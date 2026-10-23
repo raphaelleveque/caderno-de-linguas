@@ -239,3 +239,13 @@ button.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--acc
 .field{display:grid;gap:5px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom, 0px));background:var(--ink);color:var(--paper);padding:9px 15px;border-radius:9px;font-size:14.5px;z-index:9;max-width:calc(100% - 32px)}
 @media (prefers-reduced-motion:reduce){.tbar i{transition:none}}
+
+.ms-list{display:grid;gap:12px;margin-top:6px}
+.ms-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:start}
+.ms-main{display:grid;gap:4px;min-width:0}
+.ms-main .nm{font-size:14.5px;overflow-wrap:anywhere}
+.ms-main .tr{height:6px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.ms-main .tr i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.ms-main .tr i.lo{background:var(--pen)}
+.ms-main .tr i.mid{background:var(--warn)}
+.ms-row .pill{white-space:nowrap}

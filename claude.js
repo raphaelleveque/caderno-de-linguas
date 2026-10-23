@@ -11,6 +11,14 @@ const TYPE_DESC = {
 };
 const LEARNER = (L, lv) => `The learner is a Brazilian Portuguese speaker studying ${LNAME[L]}; current CEFR level ${lv}. ${L === "fr" ? "He grew up speaking French orally, so he writes by ear: watch for phonetic spelling, silent agreements, homophones and accents." : "Portuguese makes him understand almost everything, so his production slides into 'portuñol': watch for Portuguese interference in vocabulary, structure and spelling. His keyboard has no ¿ or ¡: NEVER count a missing opening ¿ or ¡ as an error, and do not list it."}`;
 
+// Temas para atribuir cada erro (nível atual + transversais)
+function errTopics(L) { return levelTopics(L, APP.st[L].level).map(t => `${t.id} — ${t.n}`).join("\n"); }
+// Quantas questões do banco cobrem cada subponto (para o gerador priorizar os mais fracos)
+function subNeed(L, id) {
+  const c = (SUBS[id] || []).map(() => 0);
+  for (const q of allQuestions(L)) if (q.t === id) for (const k of q.s || []) if (c[k] != null) c[k]++;
+  return c.map((n, k) => `${k}:${n}`).join(", ");
+}
 function catList(L) { return Object.keys(CATS[L]).map(k => `${k} (${CATS[L][k]})`).join(", "); }
 function topicList(L, lv) {
   return TOPICS[L].filter(t => !lv || t.lv === lv || t.lv === "*").map(t => `${t.id} [${t.lv}] ${t.n}`).join("\n");
@@ -26,11 +34,12 @@ function cleanErrors(L, errs) {
     frag: String(pick(e, ["text", "trecho", "fragment"]) || ""),
     fix: String(pick(e, ["fix", "correcao", "correção", "correction", "corrected", "correcta"]) || ""),
     why: String(pick(e, ["why", "porque", "explanation"]) || ""), why_pt: String(pick(e, ["why_pt", "porque_pt"]) || ""),
-    pt: !!pick(e, ["pt_interference", "interferencia_pt"]), ortho: !!pick(e, ["spelling", "ortografia"])
+    pt: !!pick(e, ["pt_interference", "interferencia_pt"]), ortho: !!pick(e, ["spelling", "ortografia"]),
+    topic: TOPIC[pick(e, ["topic", "tema"])] && TOPIC[pick(e, ["topic", "tema"])].l === L ? pick(e, ["topic", "tema"]) : null
   })).filter(e => (e.frag || e.fix) && normTxt(e.frag) !== normTxt(e.fix));
 }
 const pick = (o, keys) => { for (const k of keys) if (o && o[k] != null && o[k] !== "") return o[k]; return null; };
-const ERR_SCHEMA = `{"category":"<one id>","text":"<exact substring of the learner text that is wrong>","fix":"<the corrected form of exactly that substring; never empty>","why":"<explanation in ${"{LOUT}"}>","why_pt":"<same in Portuguese>","pt_interference":true|false,"spelling":true|false}`;
+const ERR_SCHEMA = `{"category":"<one id>","text":"<exact substring of the learner text that is wrong>","fix":"<the corrected form of exactly that substring; never empty>","why":"<explanation in ${"{LOUT}"}>","why_pt":"<same in Portuguese>","pt_interference":true|false,"spelling":true|false,"topic":"<id of the grammar topic this error belongs to (often NOT the exercise's topic), from the topic list>"}`;
 
 // Correção de uma questão aberta (ou ditado)
 async function correctOpen(q, answer) {
@@ -50,6 +59,8 @@ Scoring:
 - nota 1: the target structure is correct but there is at least one other error (a wrong or missing accent counts).
 - nota 0: the target structure is wrong, missing, or the answer does not do the task.
 For each error: category must be one of these ids: ${catList(L)}.
+For each error, "topic" is the grammar topic it belongs to (if the error is about another point than the exercise, say which one), from:
+${errTopics(L)}
 "why" must be in ${LOUT[L]}, in short simple sentences a ${lv} learner understands; "why_pt" is the same explanation in Brazilian Portuguese.
 versao_corrigida: the learner's answer minimally corrected (keep his wording when it is valid).
 feedback: one sentence in ${LOUT[L]} at ${lv} level; feedback_pt: same in Portuguese.
@@ -100,7 +111,8 @@ Reference: ${q.a.join(" | ")}
 Learner answer: "${att.answer}"
 Previous correction: score ${att.score}/2, errors ${JSON.stringify((att.errors || []).map(e => ({ categoria: e.cat, trecho: e.frag, correcao: e.fix })))}
 Learner's argument: """${reason || "(none given)"}"""
-Return the final score and the errors that remain (same format, category from: ${Object.keys(CATS[L]).join(", ")}).
+Return the final score and the errors that remain (same format, category from: ${Object.keys(CATS[L]).join(", ")}; topic from:
+${errTopics(L)}).
 "justificativa" in ${LOUT[L]} at ${lv} level, "justificativa_pt" in Portuguese.
 Reply with only JSON: {"aceito":true|false,"nota":0|1|2,"erros":[${ERR_SCHEMA.replace("{LOUT}", LOUT[L])}],"justificativa":"","justificativa_pt":""}`, { cache: false });
   const errors = cleanErrors(L, r.erros).map(e => ({ ...e, cat: e.cat || q.c }));
@@ -108,7 +120,7 @@ Reply with only JSON: {"aceito":true|false,"nota":0|1|2,"erros":[${ERR_SCHEMA.re
 }
 
 // ---------- geração de questões ----------
-const GEN_ITEM = L => `{"tema":"<topic id>","tipo":"cloze|corr|lac|mc|trad|transf|erro|${L ? "dit|" : ""}mini","enunciado":"","instrucao":"","opcoes":[],"respostas":[""],"categoria":"<category id>"}`;
+const GEN_ITEM = L => `{"tema":"<topic id>","tipo":"cloze|corr|lac|mc|trad|transf|erro|${L ? "dit|" : ""}mini","enunciado":"","instrucao":"","opcoes":[],"respostas":[""],"categoria":"<category id>","sub":[<index(es) of the sub-point(s) of the topic this item trains>]}`;
 function validateGen(L, raw, fallbackTopic, src, lvOverride) {
   const items = Array.isArray(raw) ? raw : (raw && Array.isArray(raw.questoes) ? raw.questoes : []);
   const out = [];
@@ -127,7 +139,8 @@ function validateGen(L, raw, fallbackTopic, src, lvOverride) {
     if (ty === "transf" && !String(it.instrucao || "").trim()) continue;
     const c = CATS[L][it.categoria] ? it.categoria : (Object.keys(CATS[L]).includes("conj") ? "conj" : Object.keys(CATS[L])[0]);
     const tlv = TOPIC[t].lv === "*" ? (lvOverride || APP.st[L].level) : TOPIC[t].lv;
-    out.push({ id: uid("q"), l: L, lv: tlv, t, ty, p, a, o, i: String(it.instrucao || "").trim() || null, c, src, created: Date.now() });
+    const nsub = (SUBS[t] || []).length, sub = [].concat(it.sub == null ? [] : it.sub).map(Number).filter(k => Number.isInteger(k) && k >= 0 && k < nsub);
+    out.push({ id: uid("q"), l: L, lv: tlv, t, ty, p, a, o, i: String(it.instrucao || "").trim() || null, c, src, created: Date.now(), s: sub.length ? sub : null });
   }
   return out;
 }
@@ -141,7 +154,7 @@ async function generateForTopic(L, topicId, n, note) {
   const recentErr = APP.attempts.filter(a => a.lang === L && a.topic === topicId && a.score < 2).slice(0, 6).map(a => a.answer);
   const raw = await ask(`Write ${n} new ${LNAME[L]} exercises for one topic, CEFR ${lv}.
 ${LEARNER(L, APP.st[L].level)}
-Topic: ${topicId} — ${tp.n}${SUBS[topicId] ? "\nSub-points the learner must master (cover them across the batch, giving priority to the ones least represented in the existing prompts below; each item should test one sub-point in depth, not just its surface): " + SUBS[topicId].join("; ") : ""}${note ? "\nContext: " + note : ""}
+Topic: ${topicId} — ${tp.n}${SUBS[topicId] ? "\nSub-points the learner must master (cover them across the batch, giving priority to the ones least represented in the bank: " + subNeed(L, topicId) + "; each item should test one sub-point in depth, not just its surface; put its index in \"sub\"): " + SUBS[topicId].map((x, k) => k + "=" + x).join("; ") : ""}${note ? "\nContext: " + note : ""}
 The learner already gets multiple choice right almost every time: make items that force PRODUCTION and make him think and fail. Mix: about 1/4 closed (cloze = a 2–4 sentence text with 3–4 blanks ___, base form in parentheses after each blank when needed, "respostas" = one entry per blank in order, alternatives inside an entry separated by |; lac = one blank ___; mc at most 1 per batch and only for a true minimal pair) and 3/4 open (corr = a natural sentence with 0 to 3 realistic Portuguese-speaker errors, about 1 in 5 fully correct, "respostas" = the correct sentence; trad = 1–2 linked Brazilian Portuguese sentences that combine the topic with a classic Portuguese trap; transf = a sentence plus an instruction that forces two changes at once (e.g. person AND tense); mini = a concrete situation in ${LOUT[L]} asking for 1–3 sentences with required words or structures — never ask the learner to recall his own life${hasVoice(L) ? "; dit = a natural sentence to dictate, built to trap silent spelling" : ""}).
 Prefer traps a Portuguese speaker falls into. NEVER add Portuguese words, glosses or translations in parentheses (that gives the answer away): the context of the sentence must be enough. The only allowed hint is the base form of a verb or word in the target language, e.g. (hacer, tú). Vary vocabulary; everyday adult contexts (work, travel, city, tech, history).
 Instructions and situations in ${LOUT[L]} (simple, ${lv}). "respostas" lists 1–3 correct answers. "categoria" is the error category the item targets, one of: ${Object.keys(CATS[L]).join(", ")}.
@@ -182,6 +195,21 @@ Topic ids allowed: ${levelTopics(L, lv).map(t => t.id).join(", ")}. "categoria" 
 Rules: no Portuguese hints in parentheses, the context must be enough; lac has one ___ blank; cloze has one respostas entry per ___; mc has 3 options with the answer among them; transf has an instruction; situations never ask him to recall his own life.
 Reply with only a JSON array of items like: ${GEN_ITEM(false)}`, { cache: false });
   return validateGen(L, raw, weakTopics[0] && weakTopics[0].id, "gen", lv);
+}
+
+// Prova de tema: 6 questões novas, uma por subponto (os mais fracos primeiro), só produção
+async function generateExam(L, topicId) {
+  const tp = TOPIC[topicId], lv = tp.lv === "*" ? APP.st[L].level : tp.lv, subs = SUBS[topicId] || [];
+  const existing = allQuestions(L).filter(q => q.t === topicId).map(q => q.p).slice(-60);
+  const raw = await ask(`Write a mastery test of ${MASTER.examN} NEW ${LNAME[L]} exercises, CEFR ${lv}, for one topic. The learner has trained this topic and must now prove he masters ALL of it without having seen these exact items.
+${LEARNER(L, APP.st[L].level)}
+Topic: ${topicId} — ${tp.n}
+Sub-points (cover every one at least once; "sub" = its index): ${subs.map((x, k) => k + "=" + x).join("; ")}
+Only production: corr (0–3 realistic errors, at most one item fully correct), trad (1–2 Brazilian Portuguese sentences with a classic trap), transf (two changes at once), cloze (3–4 blanks). No mc, no lac. No hints that give the answer, no Portuguese glosses. Difficulty: the hardest realistic A2 cases, not the textbook example.
+Instructions in ${LOUT[L]}. "categoria" from: ${Object.keys(CATS[L]).join(", ")}.
+Do not repeat these existing prompts: ${JSON.stringify(existing)}
+Reply with only a JSON array of items like: ${GEN_ITEM(false)} — "tema" is always "${topicId}".`, { cache: false });
+  return validateGen(L, raw, topicId, "prova", lv).filter(q => q.ty !== "mc" && q.ty !== "lac").slice(0, MASTER.examN).map(q => ({ ...q, exam: topicId }));
 }
 
 // Texto de segunda + questões sobre ele
@@ -241,7 +269,8 @@ Learner text:
 
 1) General writing skill (independent of language, scores 0–5): tarefa (covered every required point), organizacao (opening, development, closing; paragraphs with a clear role), desenvolvimento (ideas explained and supported, not just listed), coesao (sentences and paragraphs connected), clareza (understandable at first reading), adequacao (register and tone right for the format and reader).
 2) Language (0–5): gramatica, vocabulario, ortografia; nivel = CEFR level of the language shown (A1–C2).
-3) List EVERY language error with "trecho" an exact substring of the learner text (in order of appearance). category ids: ${catList(L)}.
+3) List EVERY language error with "text" an exact substring of the learner text (in order of appearance). category ids: ${catList(L)}. "topic" from:
+${errTopics(L)}
 4) comentario: 2–3 sentences on the STRUCTURE of the text (what to reorganise, connect or develop) in ${LOUT[L]} at ${lv} level; comentario_pt: the same in Brazilian Portuguese.
 5) questoes: for up to 6 of the most important errors, one new exercise that trains that point (not the same sentence). Topic id from:
 ${topicList(L)}
@@ -268,7 +297,8 @@ ${LEARNER(L, lv)}
 Original errors that had to be fixed: ${JSON.stringify(essay.corr.errors.map(e => ({ trecho: e.frag, correcao: e.fix, categoria: e.cat })))}
 Rewritten text:
 """${essay.rewrite}"""
-List EVERY error still present in the rewrite (old or new), "trecho" an exact substring. category ids: ${catList(L)}.
+List EVERY error still present in the rewrite (old or new), "text" an exact substring. category ids: ${catList(L)}. "topic" from:
+${errTopics(L)}
 comentario: one sentence in ${LOUT[L]} (${lv}); comentario_pt: same in Portuguese.
 Reply with only JSON: {"erros":[${ERR_SCHEMA.replace("{LOUT}", LOUT[L])}],"comentario":"","comentario_pt":""}`, { cache: false });
   const errors = cleanErrors(L, r.erros).map(e => ({ ...e, cat: e.cat || "synt" }));
