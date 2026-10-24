@@ -31,7 +31,9 @@ function defaultState() { return { level: "A2", levelSince: today(), session: 0,
 // ---------- datas ----------
 const pad = n => String(n).padStart(2, "0");
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-const today = () => ymd(new Date());
+// O dia vira às 4h da manhã: um bloco feito depois da meia-noite ainda conta para o dia anterior
+const DAY_START_H = 4;
+const today = () => ymd(new Date(Date.now() - DAY_START_H * 3600000));
 const parseYmd = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
 const addDays = (s, n) => { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); };
 const weekStart = s => { const d = parseYmd(s); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return ymd(d); };
