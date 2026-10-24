@@ -2375,7 +2375,7 @@ const I18N = {
     resume: "En cours · {i}/{n}", continue: "Continuer", start: "Commencer",
     essay: "Rédaction", essayOf: "Rédaction en {lang}", essaySub: "Plan, texte, correction et réécriture", optional: "facultative",
     logOf: "Noter le cours de {lang}", logSub: "1 min : thème et erreurs corrigées", logDone: "Cours noté", note: "Noter",
-    moreTitle: "Encore du temps ?", moreSub: "Les blocs en plus comptent comme bonus.", oneMore: "Encore un bloc",
+    moreTitle: "Encore du temps ?", moreSub: "Les blocs en plus comptent comme bonus.", oneMore: "Encore un bloc", retryCorr: "Réessayer la correction",
     close: "Fermer", back: "Retour", finish: "Terminer", next: "Suivante", correct: "Corriger", correcting: "Correction en cours…", thinking: "Je réfléchis…",
     yourAnswer: "Votre réponse", reference: "Réponse de référence", selfGrade: "Claude n'a pas pu corriger. Comparez avec la référence et notez-vous honnêtement.",
     v2: "Juste", v1: "Presque", v0: "Faux", emptyAnswer: "Écrivez une réponse d'abord.",
@@ -2456,7 +2456,7 @@ const I18N = {
     resume: "En curso · {i}/{n}", continue: "Seguir", start: "Empezar",
     essay: "Redacción", essayOf: "Redacción en {lang}", essaySub: "Esquema, texto, corrección y reescritura", optional: "opcional",
     logOf: "Anotar la clase de {lang}", logSub: "1 min: tema y errores corregidos", logDone: "Clase anotada", note: "Anotar",
-    moreTitle: "¿Te queda tiempo?", moreSub: "Los bloques de más cuentan como extra.", oneMore: "Un bloque más",
+    moreTitle: "¿Te queda tiempo?", moreSub: "Los bloques de más cuentan como extra.", oneMore: "Un bloque más", retryCorr: "Reintentar la corrección",
     close: "Cerrar", back: "Volver", finish: "Terminar", next: "Siguiente", correct: "Corregir", correcting: "Corrigiendo…", thinking: "Pensando…",
     yourAnswer: "Tu respuesta", reference: "Respuesta de referencia", selfGrade: "Claude no ha podido corregir. Compara con la referencia y califícate con honestidad.",
     v2: "Bien", v1: "Casi", v0: "Mal", emptyAnswer: "Escribe una respuesta primero.",
@@ -3465,7 +3465,7 @@ function renderBlock() {
   } else if (s.phase === "correcting") {
     h += `<p class="thinking">${t("correcting")}</p>`;
   } else if (s.phase === "selfgrade") {
-    h += `<div class="qa"><b>${t("yourAnswer")}</b><span>${esc(s.draft || s.sel)}</span><b>${t("reference")}</b><span>${q.a.map(esc).join(" · ")}</span></div><p class="note">${t("selfGrade")}</p><div class="row"><button class="btn" data-act="self" data-v="2">${t("v2")}</button><button class="btn" data-act="self" data-v="1">${t("v1")}</button><button class="btn pen" data-act="self" data-v="0">${t("v0")}</button></div>`;
+    h += `<div class="qa"><b>${t("yourAnswer")}</b><span>${esc(s.draft || s.sel)}</span><b>${t("reference")}</b><span>${q.a.map(esc).join(" · ")}</span></div><p class="note">${t("selfGrade")}</p><div class="row"><button class="btn primary" data-act="retryCorr">${t("retryCorr")}</button><button class="btn" data-act="self" data-v="2">${t("v2")}</button><button class="btn" data-act="self" data-v="1">${t("v1")}</button><button class="btn pen" data-act="self" data-v="0">${t("v0")}</button></div>`;
   } else if (s.phase === "result") {
     const a = APP.attempts.find(x => x.id === s.attId);
     h += resultHTML(q, a);
@@ -3786,7 +3786,10 @@ async function submitAnswer() {
     if (QTYPES[q.ty].closed) {
       res = gradeClosed(q, answer, s.blanks);
       if (res.score < 2 && APP.sample) { try { const ex = await explainClosed(q, answer); res.errors = res.errors.map(e => ({ ...e, why: ex.why, why_pt: ex.why_pt })); } catch (e) { } }
-    } else res = await correctOpen(q, answer);
+    } else {
+      try { res = await correctOpen(q, answer); }
+      catch (e1) { console.warn("correção falhou, tentando de novo", e1); await new Promise(r => setTimeout(r, 1500)); res = await correctOpen(q, answer); }
+    }
   } catch (e) { console.warn(e); res = null; }
   if (APP.screen !== s) return;
   if (!res) { s.phase = "selfgrade"; return render(); }
@@ -3959,6 +3962,7 @@ document.addEventListener("click", async ev => {
     case "sel": s.sel = v; render(); break;
     case "submit": submitAnswer(); break;
     case "next": nextQuestion(); break;
+    case "retryCorr": { s.phase = "answer"; render(); submitAnswer(); break; }
     case "pt": s.showPt = !s.showPt; render(); break;
     case "listen": { const q = qById(blk().qids[s.idx]); if (s.replays >= 3) return; if (speak(q.l, q.p, Number(v) * 0.92)) { s.replays++; render(); } break; }
     case "self": { const q = qById(blk().qids[s.idx]); const sc = Number(v); finalizeAttempt(q, q.ty === "mc" ? s.sel : s.draft, { score: sc, targetOk: sc > 0, errors: sc < 2 ? [{ cat: q.c, frag: "", fix: q.a[0], why: "", why_pt: "", pt: false, ortho: false }] : [] }, true); break; }

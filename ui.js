@@ -200,7 +200,7 @@ function renderBlock() {
   } else if (s.phase === "correcting") {
     h += `<p class="thinking">${t("correcting")}</p>`;
   } else if (s.phase === "selfgrade") {
-    h += `<div class="qa"><b>${t("yourAnswer")}</b><span>${esc(s.draft || s.sel)}</span><b>${t("reference")}</b><span>${q.a.map(esc).join(" · ")}</span></div><p class="note">${t("selfGrade")}</p><div class="row"><button class="btn" data-act="self" data-v="2">${t("v2")}</button><button class="btn" data-act="self" data-v="1">${t("v1")}</button><button class="btn pen" data-act="self" data-v="0">${t("v0")}</button></div>`;
+    h += `<div class="qa"><b>${t("yourAnswer")}</b><span>${esc(s.draft || s.sel)}</span><b>${t("reference")}</b><span>${q.a.map(esc).join(" · ")}</span></div><p class="note">${t("selfGrade")}</p><div class="row"><button class="btn primary" data-act="retryCorr">${t("retryCorr")}</button><button class="btn" data-act="self" data-v="2">${t("v2")}</button><button class="btn" data-act="self" data-v="1">${t("v1")}</button><button class="btn pen" data-act="self" data-v="0">${t("v0")}</button></div>`;
   } else if (s.phase === "result") {
     const a = APP.attempts.find(x => x.id === s.attId);
     h += resultHTML(q, a);
@@ -521,7 +521,10 @@ async function submitAnswer() {
     if (QTYPES[q.ty].closed) {
       res = gradeClosed(q, answer, s.blanks);
       if (res.score < 2 && APP.sample) { try { const ex = await explainClosed(q, answer); res.errors = res.errors.map(e => ({ ...e, why: ex.why, why_pt: ex.why_pt })); } catch (e) { } }
-    } else res = await correctOpen(q, answer);
+    } else {
+      try { res = await correctOpen(q, answer); }
+      catch (e1) { console.warn("correção falhou, tentando de novo", e1); await new Promise(r => setTimeout(r, 1500)); res = await correctOpen(q, answer); }
+    }
   } catch (e) { console.warn(e); res = null; }
   if (APP.screen !== s) return;
   if (!res) { s.phase = "selfgrade"; return render(); }
@@ -694,6 +697,7 @@ document.addEventListener("click", async ev => {
     case "sel": s.sel = v; render(); break;
     case "submit": submitAnswer(); break;
     case "next": nextQuestion(); break;
+    case "retryCorr": { s.phase = "answer"; render(); submitAnswer(); break; }
     case "pt": s.showPt = !s.showPt; render(); break;
     case "listen": { const q = qById(blk().qids[s.idx]); if (s.replays >= 3) return; if (speak(q.l, q.p, Number(v) * 0.92)) { s.replays++; render(); } break; }
     case "self": { const q = qById(blk().qids[s.idx]); const sc = Number(v); finalizeAttempt(q, q.ty === "mc" ? s.sel : s.draft, { score: sc, targetOk: sc > 0, errors: sc < 2 ? [{ cat: q.c, frag: "", fix: q.a[0], why: "", why_pt: "", pt: false, ortho: false }] : [] }, true); break; }
