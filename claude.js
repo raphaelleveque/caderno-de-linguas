@@ -66,10 +66,10 @@ versao_corrigida: the learner's answer minimally corrected (keep his wording whe
 feedback: one sentence in ${LOUT[L]} at ${lv} level; feedback_pt: same in Portuguese.
 Reply with only JSON: {"nota":0|1|2,"tema_ok":true|false,"erros":[${errSchema}],"versao_corrigida":"","feedback":"","feedback_pt":""}`;
   let r = await ask(base);
-  let errors = cleanErrors(L, r.erros);
+  let errors = cleanErrors(L, pick(r, ["erros", "errors"]));
   if (errors.some(e => !e.cat || !e.fix)) {
     r = await ask(base + `\n\nIMPORTANT: your previous reply used a category that is not in the list, or an empty fix. Use only: ${Object.keys(CATS[L]).join(", ")}.`, { cache: false });
-    errors = cleanErrors(L, r.erros);
+    errors = cleanErrors(L, pick(r, ["erros", "errors"]));
   }
   const fallbackCat = q.c;
   errors = errors.map(e => ({ ...e, cat: e.cat || fallbackCat }));
@@ -115,7 +115,7 @@ Return the final score and the errors that remain (same format, category from: $
 ${errTopics(L)}).
 "justificativa" in ${LOUT[L]} at ${lv} level, "justificativa_pt" in Portuguese.
 Reply with only JSON: {"aceito":true|false,"nota":0|1|2,"erros":[${ERR_SCHEMA.replace("{LOUT}", LOUT[L])}],"justificativa":"","justificativa_pt":""}`, { cache: false });
-  const errors = cleanErrors(L, r.erros).map(e => ({ ...e, cat: e.cat || q.c }));
+  const errors = cleanErrors(L, pick(r, ["erros", "errors"])).map(e => ({ ...e, cat: e.cat || q.c }));
   return { accepted: !!r.aceito, score: [0, 1, 2].includes(Number(r.nota)) ? Number(r.nota) : att.score, errors, why: String(r.justificativa || ""), why_pt: String(r.justificativa_pt || "") };
 }
 
@@ -276,7 +276,7 @@ ${errTopics(L)}
 ${topicList(L)}
 Reply with only JSON: {"nivel":"A2","escrita":{"tarefa":0,"organizacao":0,"desenvolvimento":0,"coesao":0,"clareza":0,"adequacao":0},"lingua":{"gramatica":0,"vocabulario":0,"ortografia":0},"erros":[${errSchema}],"comentario":"","comentario_pt":"","questoes":[${GEN_ITEM(false)}]}`;
   let r = await ask(base, { cache: false });
-  let errors = cleanErrors(L, r.erros);
+  let errors = cleanErrors(L, pick(r, ["erros", "errors"]));
   if (errors.some(e => !e.cat)) errors = errors.map(e => ({ ...e, cat: e.cat || "synt" }));
   const num = (o, k) => Math.max(0, Math.min(5, Number((o || {})[k]) || 0));
   const words = wordCount(essay.text);
@@ -285,14 +285,14 @@ Reply with only JSON: {"nivel":"A2","escrita":{"tarefa":0,"organizacao":0,"desen
     w: Object.fromEntries(W_KEYS.map(k => [k, num(r.escrita, k)])),
     l: Object.fromEntries(L_KEYS.map(k => [k, num(r.lingua, k)])),
     errors, per100: words ? Math.round((errors.length / words) * 1000) / 10 : 0,
-    comment: String(r.comentario || ""), comment_pt: String(r.comentario_pt || "")
+    comment: String(pick(r, ["comentario", "comment"]) || ""), comment_pt: String(pick(r, ["comentario_pt", "comment_pt"]) || "")
   };
   const qs = validateGen(L, r.questoes || [], null, "erro");
   return { corr, qs };
 }
 async function correctRewrite(L, essay) {
   const lv = APP.st[L].level;
-  const r = await ask(`You are a strict ${LNAME[L]} examiner checking a REWRITE.
+  const prompt = `You are a strict ${LNAME[L]} examiner checking a REWRITE.
 ${LEARNER(L, lv)}
 Original errors that had to be fixed: ${JSON.stringify(essay.corr.errors.map(e => ({ trecho: e.frag, correcao: e.fix, categoria: e.cat })))}
 Rewritten text:
@@ -300,7 +300,12 @@ Rewritten text:
 List EVERY error still present in the rewrite (old or new), "text" an exact substring. category ids: ${catList(L)}. "topic" from:
 ${errTopics(L)}
 comentario: one sentence in ${LOUT[L]} (${lv}); comentario_pt: same in Portuguese.
-Reply with only JSON: {"erros":[${ERR_SCHEMA.replace("{LOUT}", LOUT[L])}],"comentario":"","comentario_pt":""}`, { cache: false });
-  const errors = cleanErrors(L, r.erros).map(e => ({ ...e, cat: e.cat || "synt" }));
-  return { errors, remaining: errors.length, comment: String(r.comentario || ""), comment_pt: String(r.comentario_pt || "") };
+Reply with only JSON: {"erros":[${ERR_SCHEMA.replace("{LOUT}", LOUT[L])}],"comentario":"","comentario_pt":""}`;
+  let r = await ask(prompt, { cache: false });
+  let errors = cleanErrors(L, pick(r, ["erros", "errors"])).map(e => ({ ...e, cat: e.cat || "synt" }));
+  if (!errors.length) { // "sem erros" precisa ser confirmado: uma segunda leitura independente
+    r = await ask(prompt + "\n\nCheck again word by word (accents, agreement, spelling, homophones). If there is really no error, return an empty list.", { cache: false });
+    errors = cleanErrors(L, pick(r, ["erros", "errors"])).map(e => ({ ...e, cat: e.cat || "synt" }));
+  }
+  return { errors, remaining: errors.length, comment: String(pick(r, ["comentario", "comment"]) || ""), comment_pt: String(pick(r, ["comentario_pt", "comment_pt"]) || "") };
 }
